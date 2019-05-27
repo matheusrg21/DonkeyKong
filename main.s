@@ -1,7 +1,7 @@
                     .data
 
-                    .include "fundo1_320x240.s"
-                    .include "jump_man_parado_direita_16x16.s"
+                    .include "img/fundo1_320x240.s"
+                    .include "img/jump_man_parado_direita_16x16.s"
 
                     .text
 
