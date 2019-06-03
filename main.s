@@ -1,3 +1,17 @@
+                    .text
+
+                    # Display ------------------- #
+                    .eqv DISPLAY_0 0xFF000000
+                    .eqv DISPLAY_1 0xFF100000
+                    .eqv FRAME_SEL 0xFF200604
+
+                    # Keyboard  ----------------- #
+                    .eqv KEYBOARD  0xFF200000     # Keyboard MMIO address
+                    # .eqv KEY_LEFT  TODO     # A -> Left walk
+                    # .eqv KEY_RIGHT TODO     # D -> Right walk
+                    # .eqv KEY_UP    TODO     # W ->
+                    # .eqv KEY_DOWN  TODO     # S ->
+
                     .data
 
                     .include "img/fundo1_320x240.s"
@@ -5,7 +19,7 @@
 
                     .text
 
-                    li a0, 0xFF000000             # endereco inicial da Memoria VGA
+main:               li a0, DISPLAY_0              # endereco inicial da Memoria VGA
                     li a1, 0xFF012C00             # endereco final
                     la a2, fundo                  # endereço dos dados da tela na memoria
                     addi a2, a2, 8                # primeiro pixels depois das informações de nlin ncol
@@ -21,17 +35,21 @@
                     # Polling do teclado e echo na tela
                     li s0, 0                      # zera o contador
 CONTA:              addi s0, s0, 1                # incrementa o contador
-                    call KEY                      # le o teclado sem wait
+                    call key                      # le o teclado sem wait
                     j CONTA                       # volta ao loop
 
-                    ### Apenas verifica se há tecla apertada
-KEY:                li t1, 0xFF200000             # carrega o endereço de controle do KDMMIO
+# Fn find_key() -> u8? -------------------------- #
+#                                                 #
+# Read a 'fresh' key from the keyboard            #
+key:                li t1, KEYBOARD               # carrega o endereço de controle do KDMMIO
                     lw t0, 0(t1)                  # Le bit de Controle Teclado
-                    andi t0, t0, 0x0001           # mascara o bit menos significativo
-                    beq t0, zero, FIM             # Se não há tecla pressionada então vai para FIM
-                    lw t2, 4(t1)                  # le o valor da tecla tecla
+                    bne t0, zero, _key_found      # Se não há tecla pressionada então vai para FIM
+                    li a0, 0
+                    ret
 
-FIM:                ret                           # retorna
+_key_found:         lw a0, 4(t1)                  # le o valor da tecla tecla
+                    ret
+# End find_key ---------------------------------- #
 
                     li a7, 10                     # syscall de exit
                     ecall
