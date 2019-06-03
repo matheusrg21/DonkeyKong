@@ -87,8 +87,7 @@ paint:              lw t1, 0(a0)                  # Load image width
                     lw t2, 4(a0)                  # Load image height
                     addi a0, a0, 8                # Get pointer to the image
                     POSITION t0, a1, a2           # Start offset on the display
-                    li t3, DISPLAY_0              # Load base display addr
-                    add t0, t0, t3                # Get addr to start painting
+                    DISPLAY t0, t0, a3            # Get pointer to the display
 
                     mv t3, t1                     # Backup image width
 _paint_loop:        lb t5, 0(a0)                  # Load pixel from image
