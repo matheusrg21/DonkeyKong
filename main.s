@@ -1,9 +1,13 @@
                     .text
 
+                    .include "./macros.s"
+
                     # Display ------------------- #
                     .eqv DISPLAY_0 0xFF000000
                     .eqv DISPLAY_1 0xFF100000
                     .eqv FRAME_SEL 0xFF200604
+                    .eqv DISPLAY_W 320
+                    .eqv DISPLAY_H 240
 
                     # Keyboard  ----------------- #
                     .eqv KEYBOARD  0xFF200000     # Keyboard MMIO address
@@ -78,3 +82,28 @@ mudaLinha:          addi a0, a0, -16
 
 SAI:                ret
 
+# Fn paint(img: u32, x: u32, y: u32, fr: u32) --- #
+paint:              lw t1, 0(a0)                  # Load image width
+                    lw t2, 4(a0)                  # Load image height
+                    addi a0, a0, 8                # Get pointer to the image
+                    POSITION t0, a1, a2           # Start offset on the display
+                    li t3, DISPLAY_0              # Load base display addr
+                    add t0, t0, t3                # Get addr to start painting
+
+                    mv t3, t1                     # Backup image width
+_paint_loop:        lb t5, 0(a0)                  # Load pixel from image
+                    addi a0, a0, 1                # Update image pointer
+                    sb t5, 0(t0)                  # Paint loaded pixel on the display
+                    addi t0, t0, 1                # Update display pointer
+                    addi t1, t1, -1               # One less pixel to paint
+                    bnez t1 _paint_loop           # Are we done with this line?
+
+                    addi t2, t2, -1               # One less line to paint
+                    mv t1, t3                     # Let's start the next one
+                    addi t0, t0, DISPLAY_W        # Move display pointer to the next line
+                    sub t0, t0, t3                # But we needed it to point to the START of the next line!
+
+                    bnez t2, _paint_loop          # Are we done with this image?
+                    ret                           # Yes we are!
+
+# End paint ------------------------------------- #
