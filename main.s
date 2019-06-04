@@ -23,18 +23,17 @@
 
                     .text
 
-main:               li a0, DISPLAY_0              # endereco inicial da Memoria VGA
-                    li a1, 0xFF012C00             # endereco final
-                    la a2, fundo                  # endereço dos dados da tela na memoria
-                    addi a2, a2, 8                # primeiro pixels depois das informações de nlin ncol
-                    jal fundoBMP
+main:               la a0, fundo                  # Load background image addr
+                    li a1, 0                      # Set 'x' position to start painting
+                    li a2, 0                      # Set 'y' position to start painting
+                    li a3, 0                      # Select which frame to paint into
+                    call paint
 
-                    li a0, 0xFF010F40             # endereco inicial da Memoria VGA
-                    li a1, 0xFF01220F             # endereco final
-                    la a2, jmpd                   # endereço dos dados da tela na memoria
-                    addi a2, a2, 8                # primeiro pixels depois das informações de nlin ncol
-                    li a3, 16
-                    jal boneco
+                    la a0, jmpd                   # Load mario image addr
+                    li a1, 0                      # Set 'x' position to start painting
+                    li a2, 217                    # Set 'y' position to start painting
+                    li a3, 0                      # Select which frame to paint into
+                    call paint
 
                     # Polling do teclado e echo na tela
                     li s0, 0                      # zera o contador
@@ -54,33 +53,6 @@ key:                li t1, KEYBOARD               # carrega o endereço de contr
 _key_found:         lw a0, 4(t1)                  # le o valor da tecla tecla
                     ret
 # End find_key ---------------------------------- #
-
-                    li a7, 10                     # syscall de exit
-                    ecall
-
-fundoBMP:           beq a0, a1, SAI               # Se for o último endereço então sai do loop
-                    lb t0, 0(a2)                  # le um conjunto de 4 pixels : word
-                    sb t0, 0(a0)                  # escreve a word na memória VGA
-                    addi a0, a0, 1                # soma 4 ao endereço
-                    addi a2, a2, 1
-                    j fundoBMP                    # volta a verificar
-
-boneco:             beq a0, a1, SAI
-                    lb t0, 0(a2)                  # le um conjunto de 1 pixel
-                    sb t0, 0(a0)
-                    addi a3, a3, -1
-                    addi a0, a0, 1                # soma 1 ao endereço
-                    addi a2, a2, 1
-                    beq a3 zero mudaLinha
-
-                    j boneco
-
-mudaLinha:          addi a0, a0, -16
-                    addi a0, a0, 320
-                    li a3, 16
-                    j boneco
-
-SAI:                ret
 
 # Fn paint(img: u32, x: u32, y: u32, fr: u32) --- #
 paint:              lw t1, 0(a0)                  # Load image width
