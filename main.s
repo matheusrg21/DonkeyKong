@@ -59,15 +59,17 @@ _key_found:         lw a0, 4(t1)                  # le o valor da tecla tecla
 # Fn paint(img: u32, x: u32, y: u32, fr: u32) --- #
 paint:              lw t1, 0(a0)                  # Load image width
                     lw t2, 4(a0)                  # Load image height
+                    li t4, 0xC7
                     addi a0, a0, 8                # Get pointer to the image
                     POSITION t0, a1, a2           # Start offset on the display
                     DISPLAY t0, t0, a3            # Get pointer to the display
 
                     mv t3, t1                     # Backup image width
-_paint_loop:        lb t5, 0(a0)                  # Load pixel from image
+_paint_loop:        lbu t5, 0(a0)                  # Load pixel from image
                     addi a0, a0, 1                # Update image pointer
+                    beq t4, t5, _paint_skip
                     sb t5, 0(t0)                  # Paint loaded pixel on the display
-                    addi t0, t0, 1                # Update display pointer
+_paint_skip:        addi t0, t0, 1                # Update display pointer
                     addi t1, t1, -1               # One less pixel to paint
                     bnez t1 _paint_loop           # Are we done with this line?
 
