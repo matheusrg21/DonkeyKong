@@ -11,10 +11,11 @@
 
                     # Keyboard  ----------------- #
                     .eqv KEYBOARD  0xFF200000     # Keyboard MMIO address
-                    # .eqv KEY_LEFT  TODO     # A -> Left walk
-                    # .eqv KEY_RIGHT TODO     # D -> Right walk
-                    # .eqv KEY_UP    TODO     # W ->
-                    # .eqv KEY_DOWN  TODO     # S ->
+                    .eqv KEY_MASK  0x020          # Used to turn upper case into lower case
+                    .eqv KEY_LEFT  0x061          # A -> Left walk
+                    .eqv KEY_RIGHT 0x064          # D -> Right walk
+                    .eqv KEY_UP    0x077          # W ->
+                    .eqv KEY_DOWN  0x073          # S ->
 
                     .data
 
@@ -51,6 +52,7 @@ key:                li t1, KEYBOARD               # carrega o endereço de contr
                     ret
 
 _key_found:         lw a0, 4(t1)                  # le o valor da tecla tecla
+                    ori a0, a0, KEY_MASK
                     ret
 # End find_key ---------------------------------- #
 
