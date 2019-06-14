@@ -1,5 +1,5 @@
 {
-  "editor.rulers": [20, 50, 120],
+  "editor.rulers": [22, 60, 140],
   "editor.highlightActiveIndentGuide": false,
   "editor.renderIndentGuides": false
 }
