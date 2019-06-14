@@ -24,23 +24,28 @@
 
                     .text
 
-main:               la a0, fundo                  # Load background image addr
+main:               li s0, 0                      # Current frame
+                    li s1, 0                      # Mario 'x' position
+                    li s2, 217                    # Mario 'y' position
+
+main_loop:          la a0, fundo                  # Load background image addr
                     li a1, 0                      # Set 'x' position to start painting
                     li a2, 0                      # Set 'y' position to start painting
-                    li a3, 0                      # Select which frame to paint into
+                    mv a3, s0                     # Select which frame to paint into
                     call paint
 
                     la a0, jmpd                   # Load mario image addr
-                    li a1, 0                      # Set 'x' position to start painting
-                    li a2, 217                    # Set 'y' position to start painting
-                    li a3, 0                      # Select which frame to paint into
+                    mv a1, s1                     # Set 'x' position to start painting
+                    mv a2, s2                     # Set 'y' position to start painting
+                    mv a3, s0                     # Select which frame to paint into
                     call paint
 
-                    # Polling do teclado e echo na tela
-                    li s0, 0                      # zera o contador
-CONTA:              addi s0, s0, 1                # incrementa o contador
-                    call key                      # le o teclado sem wait
-                    j CONTA                       # volta ao loop
+                    li t0, FRAME_SEL              # Load frame select MMIO addr
+                    sw s0, 0(t0)                  # Show the current frame
+                    xori s0, s0, 1                # Invert selection of the next frame
+
+                    call key                      # Try to read a key from the keyboard
+                    j main_loop                   # Continue the game loop
 
 # Fn find_key() -> u8? -------------------------- #
 #                                                 #
