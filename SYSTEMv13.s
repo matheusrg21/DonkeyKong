@@ -137,6 +137,24 @@ NumInfN:              .string "-Infinity"
 NumNaN:               .string "NaN"
 
 
+##############################################################################################
+#  TRATAMENTO DE EXCECOES: 0, 1, 2, 4, 5, 6, 7, 8                                            #
+#  GRUPO 4 2019/1                                                                            #
+#  STRINGS NECESSARIAS PARA PRINTAR NA TELA MENSAGENS DE ERRO                                #
+##############################################################################################
+str_error:            .string "Error: "
+
+instr_misaligned:     .string "Instruction address misaligned"
+instr_access_fault:   .string "Instruction access fault"
+illegal_instruction:  .string "Illegal instruction"
+load_misaligned:      .string "Load address misaligned"
+load_access_fault:    .string "Load access fault"
+store_misaligned:     .string "Store address misaligned"
+store_access_fault:   .string "Store access fault"
+
+str_PC:               .string "PC: "
+
+
 
 ### Obs.: a forma 'LABEL: instrucao' embora fique feio facilita o debug no Rars, por favor nao reformatar!!!
 
@@ -144,7 +162,118 @@ NumNaN:               .string "NaN"
                       .text
 
 ###### Devem ser colocadas aqui as identificações das interrupções e exceções
-exceptionHandling:    j ecallException                      # Por enquanto somente a exceção de ecall
+exceptionHandling:    addi sp, sp, -36
+                      sw ra,  0(sp)
+                      sw a0,  4(sp)
+                      sw a1,  8(sp)
+                      sw a2, 12(sp)
+                      sw a3, 16(sp)
+                      sw a4, 20(sp)
+                      sw a7, 24(sp)
+                      sw t0, 28(sp)
+                      sw t1, 32(sp)
+##############################################################################################
+#  ALOCACAO DE REGISTRADORES QUE SERAO UTILIZADOS NA DETECCAO DE EXCECAO                     #
+##############################################################################################
+
+                      li a0 0xC0                            # PRINTA TELA DO BITMAP DE AZUL
+                      li a7 148
+                      ecall
+
+                      li a7 104                             # ECALL PARA PRINTAR STRING NA TELA
+                      li a1 2                               # ORIGEM-X DA POSICAO DO BITMAP PARA PRINTAR STRING
+                      li a2 2                               # ORIGEM-Y DA POSICAO DO BITMAP PARA PRINTAR STRING
+                      li a3 0xC0FF                          # set color (white font on blue background)
+                      li a4 0                               # use frame 0
+
+                      la a0 str_error                       # PRINTA A MENSAGEM "Error: " NO BITMAP
+                      ecall
+
+                      mv a1 a0                              # a0 contem o endereco no bitmap do ultimo lugar
+
+                      csrrw t0 66 zero                      # t0 = valor de ucause
+
+                      beq t0 zero instrMisaligned           # UCAUSE = 0
+
+                      addi t1 zero 1
+                      beq t0 t1 instrAccessFault            # UCAUSE = 1
+
+                      addi t1 t1 1
+                      beq t0 t1 illegalInstruction          # UCAUSE = 2
+
+                      addi t1 t1 2
+                      beq t0 t1 loadMisaligned              # UCAUSE = 4
+
+                      addi t1 t1 1
+                      beq t0 t1 loadAccessFault             # UCAUSE = 5
+
+                      addi t1 t1 1
+                      beq t0 t1 storeMisaligned             # UCAUSE = 6
+
+                      addi t1 t1 1
+                      beq t0 t1 storeAccessFault            # UCAUSE = 7
+
+                      addi t1 t1 1
+                      beq t0 t1 environmentCall             # UCAUSE = 8
+
+instrMisaligned:      la a0 instr_misaligned                # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+                      ecall
+                      j showPC
+
+instrAccessFault:     la a0 instr_access_fault              # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+                      ecall
+                      j showPC
+
+illegalInstruction:   la a0 illegal_instruction             # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+                      ecall
+                      j showPC
+
+loadMisaligned:       la a0 load_misaligned                 # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+                      ecall
+                      j showPC
+
+loadAccessFault:      la a0 load_access_fault               # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+                      ecall
+                      j showPC
+
+storeMisaligned:      la a0 store_misaligned                # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+                      ecall
+                      j showPC
+
+storeAccessFault:     la a0 store_access_fault              # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+                      ecall
+                      j showPC
+
+environmentCall:      j ecallException
+
+showPC:               li a1 1                               # ORIGEM-X DA POSICAO DO BITMAP PARA PRINTAR STRING
+                      li a2 10                              # ORIGEM-Y DA POSICAO DO BITMAP PARA PRINTAR STRING (UMA LINHA ABAIXO -> COORDENADA Y ANTERIOR + 8px)
+                      la a0 str_PC
+                      ecall
+
+                      mv a1 a0                              # a1 contem o endereco no bitmap do ultimo lugar
+                      csrrw a0 65 zero                      # A0 CONTEM O VALOR DE UEPC
+                      li a7 134                             # ECALL PARA PRINTAR STRING NO BITMAP
+                      ecall
+
+fim:                  lw ra,  0(sp)
+                      lw a0,  4(sp)
+                      lw a1,  8(sp)
+                      lw a2, 12(sp)
+                      lw a3, 16(sp)
+                      lw a4, 20(sp)
+                      lw a7, 24(sp)
+                      lw t0, 28(sp)
+                      lw t1, 32(sp)
+                      addi sp, sp ,36
+##############################################################################################
+#  DESALOCACAO DE REGISTRADORES QUE FORAO UTILIZADOS NA DETECCAO DE EXCECAO                  #
+##############################################################################################
+
+
+# TRAVA O PROCESSADOR POIS HOUVE EXCECAO
+infiniteLoop:         j infiniteLoop
+
 
 endException:         csrrw tp, 65, zero                    # le o valor de EPC salvo no registrador uepc (reg 65)
                       addi tp, tp, 4                        # soma 4 para obter a instrucao seguinte ao ecall
@@ -556,6 +685,13 @@ NaoPulaLinha:         addi s0, s0, 1                        # proximo caractere
 fimloopprintString:   lw ra, 0(sp)                          # recupera ra
                       lw s0, 0(sp)                          # recupera s0 original
                       addi sp, sp, 8                        # libera espaco
+
+###############################################################################################################################
+# GRUPO 4 - 2019/1                                                                                                            #
+#                                                                                                                             #
+# COM A ALINHA ABAIXO RETORNA EM a0 O VALOR DA ULTIMA POSICAO DA MEMORIA DO VGA ESCRITA                                       #
+###############################################################################################################################
+                      mv a0 a1
 fimprintString:       ret                                   # retorna
 
 
