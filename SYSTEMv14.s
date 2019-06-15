@@ -281,236 +281,106 @@ endException:         csrrw tp, 65, zero                    # le o valor de EPC 
                       M_Uret                                # retorna PC=uepc
 
 ############# interrupcao de ECALL ###################
-ecallException:       addi sp, sp, -264                     # Salva todos os registradores na pilha
-                      sw  x1,   0(sp)
-                      sw  x2,   4(sp)
-                      sw  x3,   8(sp)
-                      sw  x4,  12(sp)
-                      sw  x5,  16(sp)
-                      sw  x6,  20(sp)
-                      sw  x7,  24(sp)
-                      sw  x8,  28(sp)
-                      sw  x9,  32(sp)
-                      sw x10,  36(sp)
-                      sw x11,  40(sp)
-                      sw x12,  44(sp)
-                      sw x13,  48(sp)
-                      sw x14,  52(sp)
-                      sw x15,  56(sp)
-                      sw x16,  60(sp)
-                      sw x17,  64(sp)
-                      sw x18,  68(sp)
-                      sw x19,  72(sp)
-                      sw x20,  76(sp)
-                      sw x21,  80(sp)
-                      sw x22,  84(sp)
-                      sw x23,  88(sp)
-                      sw x24,  92(sp)
-                      sw x25,  96(sp)
-                      sw x26, 100(sp)
-                      sw x27, 104(sp)
-                      sw x28, 108(sp)
-                      sw x29, 112(sp)
-                      sw x30, 116(sp)
-                      sw x31, 120(sp)
-
-                      fsw  f0, 124(sp)
-                      fsw  f1, 128(sp)
-                      fsw  f2, 132(sp)
-                      fsw  f3, 136(sp)
-                      fsw  f4, 140(sp)
-                      fsw  f5, 144(sp)
-                      fsw  f6, 148(sp)
-                      fsw  f7, 152(sp)
-                      fsw  f8, 156(sp)
-                      fsw  f9, 160(sp)
-                      fsw f10, 164(sp)
-                      fsw f11, 168(sp)
-                      fsw f12, 172(sp)
-                      fsw f13, 176(sp)
-                      fsw f14, 180(sp)
-                      fsw f15, 184(sp)
-                      fsw f16, 188(sp)
-                      fsw f17, 192(sp)
-                      fsw f18, 196(sp)
-                      fsw f19, 200(sp)
-                      fsw f20, 204(sp)
-                      fsw f21, 208(sp)
-                      fsw f22, 212(sp)
-                      fsw f23, 216(sp)
-                      fsw f24, 220(sp)
-                      fsw f25, 224(sp)
-                      fsw f26, 228(sp)
-                      fsw f27, 232(sp)
-                      fsw f28, 236(sp)
-                      fsw f29, 240(sp)
-                      fsw f30, 244(sp)
-                      fsw f31, 248(sp)
+ecallException:       PUSH_REGS
 
                       # Zera os valores dos registradores temporarios
-                      add t0, zero, zero
-                      add t1, zero, zero
-                      add t2, zero, zero
-                      add t3, zero, zero
-                      add t4, zero, zero
-                      add t5, zero, zero
-                      add t6, zero, zero
+                      li t0, 0
+                      li t1, 0
+                      li t2, 0
+                      li t3, 0
+                      li t4, 0
+                      li t5, 0
+                      li t6, 0
 
                       # Verifica o numero da chamada do sistema
-                      addi t0, zero, 10
+                      li t0,  10
                       beq t0, a7, goToExit                  # ecall exit
-                      addi t0, zero, 110
+                      li t0, 110
                       beq t0, a7, goToExit                  # ecall exit
 
-                      addi t0, zero, 1                      # ecall 1 = print int
+                      li t0,   1                            # ecall 1 = print int
                       beq t0, a7, goToPrintInt
-                      addi t0, zero, 101                    # ecall 1 = print int
+                      li t0, 101                            # ecall 1 = print int
                       beq t0, a7, goToPrintInt
 
-                      addi t0, zero, 2                      # ecall 2 = print float
+                      li t0,   2                            # ecall 2 = print float
                       beq t0, a7, goToPrintFloat
-                      addi t0, zero, 102                    # ecall 2 = print float
+                      li t0, 102                            # ecall 2 = print float
                       beq t0, a7, goToPrintFloat
 
-                      addi t0, zero, 4                      # ecall 4 = print string
+                      li t0,   4                            # ecall 4 = print string
                       beq t0, a7, goToPrintString
-                      addi t0, zero, 104                    # ecall 4 = print string
+                      li t0, 104                            # ecall 4 = print string
                       beq t0, a7, goToPrintString
 
-                      addi t0, zero, 5                      # ecall 5 = read int
+                      li t0,   5                            # ecall 5 = read int
                       beq t0, a7, goToReadInt
-                      addi t0, zero, 105                    # ecall 5 = read int
+                      li t0, 105                            # ecall 5 = read int
                       beq t0, a7, goToReadInt
 
-                      addi t0, zero, 6                      # ecall 6 = read float
+                      li t0,   6                            # ecall 6 = read float
                       beq t0, a7, goToReadFloat
-                      addi t0, zero, 106                    # ecall 6 = read float
+                      li t0, 106                            # ecall 6 = read float
                       beq t0, a7, goToReadFloat
 
-                      addi t0, zero, 8                      # ecall 8 = read string
+                      li t0,   8                            # ecall 8 = read string
                       beq t0, a7, goToReadString
-                      addi t0, zero, 108                    # ecall 8 = read string
+                      li t0, 108                            # ecall 8 = read string
                       beq t0, a7, goToReadString
 
-                      addi t0, zero, 11                     # ecall 11 = print char
+                      li t0,  11                            # ecall 11 = print char
                       beq t0, a7, goToPrintChar
-                      addi t0, zero, 111                    # ecall 11 = print char
+                      li t0, 111                            # ecall 11 = print char
                       beq t0, a7, goToPrintChar
 
-                      addi t0, zero, 12                     # ecall 12 = read char
+                      li t0,  12                            # ecall 12 = read char
                       beq t0, a7, goToReadChar
-                      addi t0, zero, 112                    # ecall 12 = read char
+                      li t0, 112                            # ecall 12 = read char
                       beq t0, a7, goToReadChar
 
-                      addi t0, zero, 30                     # ecall 30 = time
+                      li t0,  30                            # ecall 30 = time
                       beq t0, a7, goToTime
-                      addi t0, zero, 130                    # ecall 30 = time
+                      li t0, 130                            # ecall 30 = time
                       beq t0, a7, goToTime
 
-                      addi t0, zero, 32                     # ecall 32 = sleep
+                      li t0,  32                            # ecall 32 = sleep
                       beq t0, a7, goToSleep
-                      addi t0, zero, 132                    # ecall 32 = sleep
+                      li t0, 132                            # ecall 32 = sleep
                       beq t0, a7, goToSleep
 
-                      addi t0, zero, 41                     # ecall 41 = random
+                      li t0,  41                            # ecall 41 = random
                       beq t0, a7, goToRandom
-                      addi t0, zero, 141                    # ecall 41 = random
+                      li t0, 141                            # ecall 41 = random
                       beq t0, a7, goToRandom
 
-                      addi t0, zero, 34                     # ecall 34 = print hex
+                      li t0,  34                            # ecall 34 = print hex
                       beq t0, a7, goToPrintHex
-                      addi t0, zero, 134                    # ecall 34 = print hex
+                      li t0, 134                            # ecall 34 = print hex
                       beq t0, a7, goToPrintHex
 
-                      addi t0, zero, 31                     # ecall 31 = MIDI out
+                      li t0,  31                            # ecall 31 = MIDI out
                       beq t0, a7, goToMidiOut               # Generate tone and return immediately
-                      addi t0, zero, 131                    # ecall 31 = MIDI out
+                      li t0, 131                            # ecall 31 = MIDI out
                       beq t0, a7, goToMidiOut
 
-                      addi t0, zero, 33                     # ecall 33 = MIDI out synchronous
+                      li t0,  33                            # ecall 33 = MIDI out synchronous
                       beq t0, a7, goToMidiOutSync           # Generate tone and return upon tone completion
-                      addi t0, zero, 133                    # ecall 33 = MIDI out synchronous
+                      li t0, 133                            # ecall 33 = MIDI out synchronous
                       beq t0, a7, goToMidiOutSync
 
-                      addi t0, zero, 48                     # ecall 48 = CLS
+                      li t0,  48                            # ecall 48 = CLS
                       beq t0, a7, goToCLS
-                      addi t0, zero, 148                    # ecall 48 = CLS
+                      li t0, 148                            # ecall 48 = CLS
                       beq t0, a7, goToCLS
 
-                      addi t0, zero, 47                     # ecall 47 = DrawLine
+                      li t0,  47                            # ecall 47 = DrawLine
                       beq t0, a7, goToBRES
-                      addi t0, zero, 147                    # ecall 47 = DrawLine
+                      li t0, 147                            # ecall 47 = DrawLine
                       beq t0, a7, goToBRES
 
 
-endEcall:             lw  x1,   0(sp)                       # recupera QUASE todos os registradores na pilha
-                      lw  x2,   4(sp)
-                      lw  x3,   8(sp)
-                      lw  x4,  12(sp)
-                      lw  x5,  16(sp)
-                      lw  x6,  20(sp)
-                      lw  x7,  24(sp)
-                      lw  x8,  28(sp)
-                      lw  x9,  32(sp)
-                      # lw x10,  36(sp)                       # a0 retorno de valor
-                      lw x11,  40(sp)
-                      lw x12,  44(sp)
-                      lw x13,  48(sp)
-                      lw x14,  52(sp)
-                      lw x15,  56(sp)
-                      lw x16,  60(sp)
-                      lw x17,  64(sp)
-                      lw x18,  68(sp)
-                      lw x19,  72(sp)
-                      lw x20,  76(sp)
-                      lw x21,  80(sp)
-                      lw x22,  84(sp)
-                      lw x23,  88(sp)
-                      lw x24,  92(sp)
-                      lw x25,  96(sp)
-                      lw x26, 100(sp)
-                      lw x27, 104(sp)
-                      lw x28, 108(sp)
-                      lw x29, 112(sp)
-                      lw x30, 116(sp)
-                      lw x31, 120(sp)
-
-                      flw  f0, 124(sp)
-                      flw  f1, 128(sp)
-                      flw  f2, 132(sp)
-                      flw  f3, 136(sp)
-                      flw  f4, 140(sp)
-                      flw  f5, 144(sp)
-                      flw  f6, 148(sp)
-                      flw  f7, 152(sp)
-                      flw  f8, 156(sp)
-                      flw  f9, 160(sp)
-                      # flw f10, 164(sp)                      # fa0 retorno de valor
-                      flw f11, 168(sp)
-                      flw f12, 172(sp)
-                      flw f13, 176(sp)
-                      flw f14, 180(sp)
-                      flw f15, 184(sp)
-                      flw f16, 188(sp)
-                      flw f17, 192(sp)
-                      flw f18, 196(sp)
-                      flw f19, 200(sp)
-                      flw f20, 204(sp)
-                      flw f21, 208(sp)
-                      flw f22, 212(sp)
-                      flw f23, 216(sp)
-                      flw f24, 220(sp)
-                      flw f25, 224(sp)
-                      flw f26, 228(sp)
-                      flw f27, 232(sp)
-                      flw f28, 236(sp)
-                      flw f29, 240(sp)
-                      flw f30, 244(sp)
-                      flw f31, 248(sp)
-
-                      addi sp, sp, 264
+endEcall:             POP_REGS
                       j endException
-
 
 goToExit:             DE1(goToExitDE2)                      # se for a DE2
                       li a7, 10                             # chama o ecall normal do Rars
