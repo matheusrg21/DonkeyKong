@@ -401,15 +401,14 @@ goToCLS:              jal clsCLS                            # chama CLS
 goToBRES:             jal BRESENHAM                         # chama BRESENHAM
                       j endEcall
 
-####################################################################################################
+# ------------------------------------------------------------------------------------------------------------------------------------------
 
-#############################################
-#  PrintInt                                 #
-#  a0    =    valor inteiro                 #
-#  a1    =    x                             #
-#  a2    =    y                             #
-#  a3    =    cor                           #
-#############################################
+# PrintInt ------------------------------------------------ #
+#  a0 = valor inteiro                                       #
+#  a1 = x                                                   #
+#  a2 = y                                                   #
+#  a3 = cor                                                 #
+# --------------------------------------------------------- #
 
 printInt:             addi sp, sp, -4                       # Aloca espaco
                       sw ra, 0(sp)                          # salva ra
@@ -450,13 +449,12 @@ fimprintInt:          ret                                   # retorna
 
 
 
-#############################################
-#  PrintHex                                 #
-#  a0    =    valor inteiro                 #
-#  a1    =    x                             #
-#  a2    =    y                             #
-#  a3    =    cor                           #
-#############################################
+# PrintHex ------------------------------------------------ #
+#  a0 = valor inteiro                                       #
+#  a1 = x                                                   #
+#  a2 = y                                                   #
+#  a3 = cor                                                 #
+# --------------------------------------------------------- #
 
 printHex:             addi sp, sp, -4                       # aloca espaco
                       sw ra, 0(sp)                          # salva ra
@@ -490,13 +488,12 @@ fimloopprintHex:      sb zero, 0(t2)                        # grava \null na str
 fimprintHex:          ret                                   # retorna
 
 
-#####################################
-#  PrintSring                       #
-#  a0    =  endereco da string      #
-#  a1    =  x                       #
-#  a2    =  y                       #
-#  a3    =  cor                     #
-#####################################
+# PrintSring ---------------------------------------------- #
+#  a0 = endereco da string                                  #
+#  a1 = x                                                   #
+#  a2 = y                                                   #
+#  a3 = cor                                                 #
+# --------------------------------------------------------- #
 
 printString:          addi sp, sp, -8                       # aloca espaco
                       sw ra, 0(sp)                          # salva ra
@@ -521,31 +518,31 @@ fimloopprintString:   lw ra, 0(sp)                          # recupera ra
                       lw s0, 0(sp)                          # recupera s0 original
                       addi sp, sp, 8                        # libera espaco
 
-###############################################################################################################################
-# GRUPO 4 - 2019/1                                                                                                            #
-#                                                                                                                             #
-# COM A ALINHA ABAIXO RETORNA EM a0 O VALOR DA ULTIMA POSICAO DA MEMORIA DO VGA ESCRITA                                       #
-###############################################################################################################################
+                      # GRUPO 4 - 2019/1 ------------------ #                                                                                                           #
+                      #                                     #
+                      # COM A ALINHA ABAIXO RETORNA EM a0 O #
+                      # VALOR DA ULTIMA POSICAO DA MEMORIA  #
+                      # DO VGA ESCRITA                      #
+                      # ----------------------------------- #                                                                                                           #
                       mv a0 a1
 fimprintString:       ret                                   # retorna
 
 
-#########################################################
-#  PrintChar                                            #
-#  a0 = char(ASCII)                                     #
-#  a1 = x                                               #
-#  a2 = y                                               #
-#  a3 = cores (0x0000bbff)   b = fundo, f = frente      #
-#  a4 = frame (0 ou 1)                                  #
-#########################################################
-#   t0 = i                                              #
-#   t1 = j                                              #
-#   t2 = endereco do char na memoria                    #
-#   t3 = metade do char (2a e depois 1a)                #
-#   t4 = endereco para impressao                        #
-#   t5 = background color                               #
-#   t6 = foreground color                               #
-#########################################################
+# PrintChar ----------------------------------------------- #
+#  a0 = char(ASCII)                                         #
+#  a1 = x                                                   #
+#  a2 = y                                                   #
+#  a3 = cores (0x0000bbff)   b = fundo, f = frente          #
+#  a4 = frame (0 ou 1)                                      #
+# --------------------------------------------------------- #
+#  t0 = i                                                   #
+#  t1 = j                                                   #
+#  t2 = endereco do char na memoria                         #
+#  t3 = metade do char (2a e depois 1a)                     #
+#  t4 = endereco para impressao                             #
+#  t5 = background color                                    #
+#  t6 = foreground color                                    #
+# --------------------------------------------------------- #
 #  t9 foi convertido para s9 pois nao ha registradores temporarios sobrando dentro desta funcao
 
 
@@ -621,11 +618,9 @@ endForChar2J:         addi t0, t0, -1                       # i--
 endForChar2I:         ret                                   # retorna
 
 
-#########################################
-# ReadChar                              #
-# a0 = valor ascii da tecla             #
-# 2017/2                                #
-#########################################
+# ReadChar ------------------------------------------------ #
+# a0 = valor ascii da tecla                                 #
+# --------------------------------------------------------- #
 
 readChar:             DE1(readCharKDMMIODE2)
 
@@ -688,14 +683,12 @@ naoehshiftChar:       add t3, s0, t3                        # endereco na tabela
 
 fimreadChar:          ret                                   # retorna
 
-#########################################
-#    ReadString                         #
-# a0 = end Inicio                       #
-# a1 = tam Max String                   #
-# a2 = end do ultimo caractere          #
-# a3 = num de caracteres digitados      #
-# 2018/1                                #
-#########################################
+# ReadString ---------------------------------------------- #
+# a0 = end Inicio                                           #
+# a1 = tam Max String                                       #
+# a2 = end do ultimo caractere                              #
+# a3 = num de caracteres digitados                          #
+# --------------------------------------------------------- #
 # muda a2, a3, s2 e s0
 
 readString:           addi sp, sp, -8                       # reserva espaco na pilha
@@ -731,12 +724,9 @@ fimreadString:        sb zero, 0(a0)                        # grava NULL no buff
                       addi sp, sp, 8                        # libera espaco
                       ret                                   # retorna
 
-
-###########################
-#    ReadInt              #
-# a0 = valor do inteiro   #
-#                         #
-###########################
+# ReadInt ------------------------------------------------- #
+#  a0 = valor do inteiro                                    #
+# --------------------------------------------------------- #
 
 readInt:              addi sp, sp, -4                       # reserva espaco na pilha
                       sw ra, 0(sp)                          # salva ra
@@ -777,23 +767,33 @@ fimReadInt:           lw ra, 0(sp)                          # recupera ra
                       addi sp, sp, 4                        # libera espaco
                       ret                                   # fim ReadInt
 
+# MidiOut ------------------------------------------------- #
+#  a0 = pitch (0-127)                                       #
+#  a1 = duration in milliseconds                            #
+#  a2 = instrument (0-15)                                   #
+#  a3 = volume (0-127)                                      #
+# --------------------------------------------------------- #
 
-###########################################
-#        MidiOut 31 (2015/1)              #
-#  a0 = pitch (0-127)                     #
-#  a1 = duration in milliseconds          #
-#  a2 = instrument (0-15)                 #
-#  a3 = volume (0-127)                    #
-###########################################
+# --------------------------------------------------------- #
+#                                                           #
+# Note Data           = 32 bits                             #
+#                     =  1b - Melody                        #
+#                     =  4b - Instrument                    #
+#                     =  7b - Volume                        #
+#                     =  7b - Pitch                         #
+#                     =  1b - End                           #
+#                     =  1b - Repeat                        #
+#                     = 11b - Duration                      #
+#                                                           #
+# Note Data (ecall)   = 32 bits                             #
+#                     =  1b - Melody                        #
+#                     =  4b - Instrument                    #
+#                     =  7b - Volume                        #
+#                     =  7b - Pitch                         #
+#                     = 13b - Duration                      #
+#                                                           #
+# --------------------------------------------------------- #
 
-
-#################################################################################################
-#
-# Note Data           = 32 bits     |   1'b - Melody   |   4'b - Instrument   |   7'b - Volume   |   7'b - Pitch   |   1'b - End   |   1'b - Repeat   |   11'b - Duration   |
-#
-# Note Data (ecall) = 32 bits     |   1'b - Melody   |   4'b - Instrument   |   7'b - Volume   |   7'b - Pitch   |   13'b - Duration   |
-#
-#################################################################################################
 midiOut:              DE1(midiOutDE2)
                       li a7, 31                             # Chama o ecall normal
                       ecall
@@ -838,21 +838,33 @@ Check_AUD_DACLRCK:    lw t3, 0(t2)
 
 fimmidiOut:           ret
 
-###########################################
-#        MidiOut 33 (2015/1)              #
-#  a0 = pitch (0-127)                     #
-#  a1 = duration in milliseconds          #
-#  a2 = instrument (0-127)                #
-#  a3 = volume (0-127)                    #
-###########################################
+# MidiOut ------------------------------------------------- #
+#  a0 = pitch (0-127)                                       #
+#  a1 = duration in milliseconds                            #
+#  a2 = instrument (0-127)                                  #
+#  a3 = volume (0-127)                                      #
+# --------------------------------------------------------- #
 
-#################################################################################################
-#
-# Note Data             = 32 bits     |   1'b - Melody   |   4'b - Instrument   |   7'b - Volume   |   7'b - Pitch   |   1'b - End   |   1'b - Repeat   |   8'b - Duration   |
-#
-# Note Data (ecall)     = 32 bits     |   1'b - Melody   |   4'b - Instrument   |   7'b - Volume   |   7'b - Pitch   |   13'b - Duration   |
-#
-#################################################################################################
+# --------------------------------------------------------- #
+#                                                           #
+# Note Data           = 32 bits                             #
+#                     = m - 1b - Melody                     #
+#                     = i - 4b - Instrument                 #
+#                     = v - 7b - Volume                     #
+#                     = p - 7b - Pitch                      #
+#                     = e - 1b - End                        #
+#                     = r - 1b - Repeat                     #
+#                     = d - 8b - Duration                   #
+#                                                           #
+# Note Data ecall     = 32 bits                             #
+#                     = 1b - Melody                         #
+#                     = 4b - Instrument                     #
+#                     = 7b - Volume                         #
+#                     = 7b - Pitch                          #
+#                     = 13b - Duration                      #
+#                                                           #
+# --------------------------------------------------------- #
+
 midiOutSync:          DE1(midiOutSyncDE2)
                       li a7, 33                             # Chama o ecall normal
                       ecall
@@ -905,11 +917,10 @@ Melody:               lw t5, 0(t4)
 fimmidiOutSync:       ret
 
 
-#################################
-# printFloat                    #
-# imprime Float em fa0          #
-# na posicao (a1,a2)  cor a3    #
-#################################
+# PrintFloat ---------------------------------------------- #
+# imprime Float em fa0                                      #
+# na posicao (a1,a2)  cor a3                                #
+# --------------------------------------------------------- #
 # muda s0, s1
 
 printFloat:           addi sp, sp, -4
@@ -1069,12 +1080,9 @@ fimprintFloat:        jal printString                       # imprime a string e
                       addi sp, sp, 4                        # libera espaco
                       ret                                   # retorna
 
-
-#################################
-# readFloat                     #
-# fa0 = float digitado          #
-# 2017/2                        #
-#################################
+# ReadFloat ----------------------------------------------- #
+#  fa0 = float digitado                                     #
+# --------------------------------------------------------- #
 
 readFloat:            addi sp, sp, -4                       # aloca espaco
                       sw ra, 0(sp)                          # salva ra
@@ -1266,11 +1274,11 @@ fimreadFloat:         lw ra, 0(sp)                          # recupera ra
                       ret                                   # retorna
 
 
-############################################
-#  Time                                    #
-#  a0    =    Time                         #
-#  a1    =    zero                         #
-############################################
+# Time ---------------------------------------------------- #
+#  a0 = Time                                                #
+#  a1 = zero                                                #
+# --------------------------------------------------------- #
+
 time:                 DE1(timeDE2)
                       li a7,30                              # Chama o ecall do Rars
                       ecall
@@ -1282,10 +1290,10 @@ timeDE2:              li t0, STOPWATCH                      # carrega endereco d
 fimTime:              ret                                   # retorna
 
 
-############################################
-#  Sleep                                   #
-#  a0    =    Tempo em ms                  #
-############################################
+# Sleep --------------------------------------------------- #
+#  a0 = Tempo em ms                                         #
+# --------------------------------------------------------- #
+
 sleep:                DE1(sleepDE2)
                       li a7, 32                             # Chama o ecall do Rars
                       ecall
@@ -1301,10 +1309,10 @@ LoopSleep:            lw t1, 0(t0)                          # carrega o contador
 fimSleep:             ret                                   # retorna
 
 
-############################################
-#  Random                                  #
-#  a0    =    numero randomico             #
-############################################
+# Random -------------------------------------------------- #
+#  a0 = numero randomico                                    #
+# --------------------------------------------------------- #
+
 random:               DE1(randomDE2)
                       li a7,41                              # Chama o ecall do Rars
                       ecall
@@ -1316,11 +1324,9 @@ randomDE2:            li t0, LFSR                           # carrega endereco d
 fimRandom:            ret                                   # retorna
 
 
-#################################
-#    CLS                        #
-#  Clear Screen                 #
-#  a0 = cor                     #
-#################################
+# Clear Screen -------------------------------------------- #
+#  a0 = cor                                                 #
+# --------------------------------------------------------- #
 
 clsCLS:               beq a1, zero, frame0CLS
                       li t1, VGAADDRESSINI1                 # Memoria VGA 1
@@ -1347,11 +1353,11 @@ forCLS:               beq t1, t2, fimCLS
 fimCLS:               ret
 
 
-#########################################################################
-#  Draw Line                                                            #
-#  Desenha uma linha do ponto (a0,a1) ao ponto (a2,a3) com a cor a4     #
-# na Frame a5 (0 ou 1)                                                  #
-#########################################################################
+# Draw Line ----------------------------------------------- #
+#                                                           #
+# Desenha uma linha do ponto (a0,a1) ao ponto (a2,a3) com   #
+# a cor a4 na Frame a5 (0 ou 1)                             #
+# --------------------------------------------------------- #
 
 BRESENHAM:            li a6, VGAADDRESSINI0                 # Memoria VGA 0
                       beq a5, zero, pulaBRES
@@ -1383,54 +1389,54 @@ PULACBRES:            ble a1, a3, PULAC2BRES
                       mv a3, a5
 PULAC2BRES:           j PLOTHIGHBRES
 
-PLOTLOWBRES:          sub t0, a2, a0                        # dx=x1-x0
-                      sub t1, a3, a1                        # dy y1-y0
-                      li t2, 1                              # yi=1
-                      bge t1, zero, PULA1BRES               # dy>=0 PULA
-                      li t2, -1                             # yi=-1
-                      sub t1, zero, t1                      # dy=-dy
-PULA1BRES:            slli t3, t1, 1                        # 2*dy
-                      sub t3, t3, t0                        # D=2*dy-dx
-                      mv t4, a1                             # y=y0
-                      mv t5, a0                             # x=x0
+PLOTLOWBRES:          sub t0, a2, a0                        # dx = x1 - x0
+                      sub t1, a3, a1                        # dy = y1 - y0
+                      li t2, 1                              # yi = 1
+                      bge t1, zero, PULA1BRES               # dy >= 0 PULA
+                      li t2, -1                             # yi = -1
+                      sub t1, zero, t1                      # dy = -dy
+PULA1BRES:            slli t3, t1, 1                        # 2 * dy
+                      sub t3, t3, t0                        # D = 2 * dy - dx
+                      mv t4, a1                             # y = y0
+                      mv t5, a0                             # x = x0
 
-LOOPx1BRES:           mul t6, t4, a7                        # y*320
-                      add t6, t6, t5                        # y*320+x
-                      add t6, t6, a6                        # 0xFF000000+y*320+x
+LOOPx1BRES:           mul t6, t4, a7                        # y * 320
+                      add t6, t6, t5                        # y * 320 + x
+                      add t6, t6, a6                        # 0xFF000000 + y * 320 + x
                       sb a4, 0(t6)                          # plot com cor a4
 
-                      ble t3, zero, PULA2BRES               # D<=0
-                      add t4, t4, t2                        # y=y+yi
-                      slli t6, t0, 1                        # 2*dx
-                      sub t3, t3, t6                        # D=D-2dx
-PULA2BRES:            slli t6, t1, 1                        # 2*dy
-                      add t3, t3, t6                        # D=D+2dx
+                      ble t3, zero, PULA2BRES               # D <= 0
+                      add t4, t4, t2                        # y = y + yi
+                      slli t6, t0, 1                        # 2 * dx
+                      sub t3, t3, t6                        # D = D - 2dx
+PULA2BRES:            slli t6, t1, 1                        # 2 * dy
+                      add t3, t3, t6                        # D = D + 2dx
                       addi t5, t5, 1
                       bne t5, a2, LOOPx1BRES
                       ret
 
-PLOTHIGHBRES:         sub t0, a2, a0                        # dx=x1-x0
-                      sub t1, a3, a1                        # dy y1-y0
-                      li t2, 1                              # xi=1
-                      bge t0, zero, PULA3BRES               # dy>=0 PULA
-                      li t2, -1                             # xi=-1
-                      sub t0, zero, t0                      # dx=-dx
-PULA3BRES:            slli t3, t0, 1                        # 2*dx
-                      sub t3, t3, t1                        # D=2*dx-d1
-                      mv t4, a0                             # x=x0
-                      mv t5, a1                             # y=y0
+PLOTHIGHBRES:         sub t0, a2, a0                        # dx = x1 - x0
+                      sub t1, a3, a1                        # dy = y1 - y0
+                      li t2, 1                              # xi = 1
+                      bge t0, zero, PULA3BRES               # dy >= 0 PULA
+                      li t2, -1                             # xi = -1
+                      sub t0, zero, t0                      # dx = -dx
+PULA3BRES:            slli t3, t0, 1                        # 2 * dx
+                      sub t3, t3, t1                        # D = 2 * dx - d1
+                      mv t4, a0                             # x = x0
+                      mv t5, a1                             # y = y0
 
-LOOPx2BRES:           mul t6, t5, a7                        # y*320
-                      add t6, t6, t4                        # y*320+x
-                      add t6, t6, a6                        # 0xFF000000+y*320+x
+LOOPx2BRES:           mul t6, t5, a7                        # y * 320
+                      add t6, t6, t4                        # y * 320 + x
+                      add t6, t6, a6                        # 0xFF000000 + y * 320 + x
                       sb a4, 0(t6)                          # plot com cor a4
 
-                      ble t3, zero, PULA4BRES               # D<=0
-                      add t4, t4, t2                        # x=x+xi
-                      slli t6, t1, 1                        # 2*dy
-                      sub t3, t3, t6                        # D=D-2dy
-PULA4BRES:            slli t6, t0, 1                        # 2*dy
-                      add t3, t3, t6                        # D=D+2dx
+                      ble t3, zero, PULA4BRES               # D <= 0
+                      add t4, t4, t2                        # x = x + xi
+                      slli t6, t1, 1                        # 2 * dy
+                      sub t3, t3, t6                        # D = D - 2dy
+PULA4BRES:            slli t6, t0, 1                        # 2 * dy
+                      add t3, t3, t6                        # D =D + 2dx
                       addi t5, t5, 1
                       bne t5, a3, LOOPx2BRES
                       ret
