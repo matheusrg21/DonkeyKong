@@ -124,7 +124,7 @@ LabelScanCodeShift:   .byte
 
                       .align 2
 
-#buffer do ReadString, ReadFloat, SDread, etc. 512 caracteres/bytes
+# buffer do ReadString, ReadFloat, SDread, etc. 512 caracteres/bytes
 TempBuffer:           .space 512
 
 # tabela de conversao hexa para ascii
@@ -152,7 +152,7 @@ endException:         csrrw tp, 65, zero                    # le o valor de EPC 
                       M_Uret                                # retorna PC=uepc
 
 ############# interrupcao de ECALL ###################
-ecallException:       addi    sp, sp, -264                  # Salva todos os registradores na pilha
+ecallException:       addi sp, sp, -264                     # Salva todos os registradores na pilha
                       sw  x1,   0(sp)
                       sw  x2,   4(sp)
                       sw  x3,   8(sp)
@@ -434,7 +434,7 @@ goToRandom:           jal random                            # chama random
 goToCLS:              jal clsCLS                            # chama CLS
                       j endEcall
 
-goToBRES:              jal BRESENHAM                         # chama BRESENHAM
+goToBRES:             jal BRESENHAM                         # chama BRESENHAM
                       j endEcall
 
 ####################################################################################################
@@ -539,7 +539,7 @@ printString:          addi sp, sp, -8                       # aloca espaco
                       sw s0, 4(sp)                          # salva s0
                       mv s0, a0                             # s0 = endereco do caractere na string
 
-loopprintString:      lb  a0, 0(s0)                         # le em a0 o caracter a ser impresso
+loopprintString:      lb a0, 0(s0)                          # le em a0 o caracter a ser impresso
                       beq a0, zero, fimloopprintString      # string ASCIIZ termina com NULL
 
                       jal printChar                         # imprime char
@@ -656,7 +656,7 @@ endForChar2I:         ret                                   # retorna
 # 2017/2                                #
 #########################################
 
-readChar:  DE1(readCharKDMMIODE2)
+readChar:             DE1(readCharKDMMIODE2)
 
 ##### Tratamento para uso com o Keyboard Display MMIO Tool do Rars
 readCharKDMMIO:       li t0, KDMMIO_Ctrl                    # Execucao com Polling do KD MMIO
@@ -727,7 +727,7 @@ fimreadChar:          ret                                   # retorna
 #########################################
 # muda a2, a3, s2 e s0
 
-readString:           addi   sp, sp, -8                     # reserva espaco na pilha
+readString:           addi sp, sp, -8                       # reserva espaco na pilha
                       sw s0, 4(sp)                          # salva s0
                       sw ra, 0(sp)                          # salva ra
                       li a3, 0                              # zera o contador de caracteres digitados
@@ -777,7 +777,7 @@ readInt:              addi sp, sp, -4                       # reserva espaco na 
                       li t3, 1                              # dezenas, centenas, etc
                       mv a0, zero                           # zera o numero
 
-loopReadInt:          beq  a3, zero, fimReadInt             # Leu todos os digitos
+loopReadInt:          beq a3,zero, fimReadInt               # Leu todos os digitos
                       lb t1, (t0)                           # le um digito
                       li tp, 0x0000002D
                       beq t1, tp, ehnegReadInt              # = '-'
@@ -882,7 +882,7 @@ fimmidiOut:           ret
 # Note Data (ecall)     = 32 bits     |   1'b - Melody   |   4'b - Instrument   |   7'b - Volume   |   7'b - Pitch   |   13'b - Duration   |
 #
 #################################################################################################
-midiOutSync: DE1(midiOutSyncDE2)
+midiOutSync:          DE1(midiOutSyncDE2)
                       li a7, 33                             # Chama o ecall normal
                       ecall
                       j fimmidiOutSync
@@ -977,39 +977,39 @@ ehposprintFloat:      sb t0, 0(s0)                          # coloca sinal no bu
 
                       # Eh um numero float normal  t0 eh o expoente e t1 eh a mantissa
                       # Encontra o E tal que 10^E <= x <10^(E+1)
-                      fabs.s     ft0, fa0                   # ft0 recebe o modulo  de x
+                      fabs.s ft0, fa0                       # ft0 recebe o modulo  de x
                       li tp, 1
-                      fcvt.s.w   ft1, tp                    # ft1 recebe o numero 1.0
+                      fcvt.s.w ft1, tp                      # ft1 recebe o numero 1.0
                       li tp, 10
-                      fcvt.s.w   ft6, tp                    # ft6 recebe o numero 10.0
+                      fcvt.s.w ft6, tp                      # ft6 recebe o numero 10.0
                       li tp, 2
-                      fcvt.s.w   ft8, tp
-                      fdiv.s    ft7, ft1, ft8               # ft7 recebe o numero 0.5
+                      fcvt.s.w ft8, tp
+                      fdiv.s ft7, ft1, ft8                  # ft7 recebe o numero 0.5
 
-                      flt.s   t4, ft0, ft1                  # ft0 < 1.0 ? Se sim, E deve ser negativo
+                      flt.s t4, ft0, ft1                    # ft0 < 1.0 ? Se sim, E deve ser negativo
                       bnez t4, menor1printFloat             # se a comparacao deu true (1), pula
-                      fmv.s   ft2, ft6                      # ft2  fator de multiplicacao = 10
+                      fmv.s ft2, ft6                        # ft2  fator de multiplicacao = 10
                       j cont2printFloat                     # vai para expoente positivo
 menor1printFloat:     fdiv.s ft2,ft1,ft6                    # ft2 fator multiplicativo = 0.1
 
 # calcula o expoente negativo de 10
-cont1printFloat:      fmv.s   ft4, ft0                      # inicia com o numero x
-                      fmv.s   ft3, ft1                      # contador comeca em 1
-loop1printFloat:      fdiv.s   ft4, ft4, ft2                # divide o numero pelo fator multiplicativo
-                      fle.s   t3, ft4, ft1                  # o numero eh > que 1? entao fim
-                      beq t3,zero, fimloop1printFloat
-                      fadd.s   ft3, ft3, ft1                # incrementa o contador
+cont1printFloat:      fmv.s ft4, ft0                        # inicia com o numero x
+                      fmv.s ft3, ft1                        # contador comeca em 1
+loop1printFloat:      fdiv.s ft4, ft4, ft2                  # divide o numero pelo fator multiplicativo
+                      fle.s t3, ft4, ft1                    # o numero eh > que 1? entao fim
+                      beq t3, zero, fimloop1printFloat
+                      fadd.s ft3, ft3, ft1                  # incrementa o contador
                       j loop1printFloat                     # volta ao loop
-fimloop1printFloat:   fdiv.s   ft4, ft4, ft2                # ajusta o numero
+fimloop1printFloat:   fdiv.s ft4, ft4, ft2                  # ajusta o numero
                       j intprintFloat                       # vai para imprimir a parte inteira
 
 # calcula o expoente positivo de 10
-cont2printFloat:      fmv.s    ft4, ft0                     # inicia com o numero x
+cont2printFloat:      fmv.s ft4, ft0                        # inicia com o numero x
                       fcvt.s.w ft3, zero                    # contador comeca em 0
-loop2printFloat:      flt.s    t3, ft4, ft6                 # resultado eh < que 10? entao fim
-                      fdiv.s    ft4, ft4, ft2               # divide o numero pelo fator multiplicativo
+loop2printFloat:      flt.s t3, ft4, ft6                    # resultado eh < que 10? entao fim
+                      fdiv.s ft4, ft4, ft2                  # divide o numero pelo fator multiplicativo
                       bne t3, zero, intprintFloat
-                      fadd.s    ft3, ft3, ft1               # incrementa o contador
+                      fadd.s ft3, ft3, ft1                  # incrementa o contador
                       j loop2printFloat
 
 # Neste ponto tem-se em t4 se ft0<1, em ft3 o expoente de 10 e ft0 0 modulo do numero e s1 o sinal
@@ -1018,13 +1018,13 @@ loop2printFloat:      flt.s    t3, ft4, ft6                 # resultado eh < que
 # imprime parte inteira (o sinal ja esta no buffer)
 intprintFloat:        fmul.s ft4, ft4, ft2                  # ajusta o numero
                       fsub.s ft4, ft4, ft7                  # tira 0.5, dessa forma sempre ao converter estaremos fazendo floor
-                      fcvt.w.s  t0, ft4                     # coloca floor de ft4 em t0
+                      fcvt.w.s t0, ft4                      # coloca floor de ft4 em t0
                       fadd.s ft4, ft4, ft7                  # readiciona 0.5
                       addi t0, t0, 48                       # converte para ascii
                       sb t0, 0(s0)                          # coloca no buffer
                       addi s0, s0, 1                        # incrementta o buffer
 
-# imprime parte fracionaria
+                      # imprime parte fracionaria
                       li t0, '.'                            # carrega o '.'
                       sb t0, 0(s0)                          # coloca no buffer
                       addi s0, s0, 1                        # incrementa o buffer
@@ -1062,7 +1062,7 @@ expposprintFloat:     sb t0, 0(s0)                          # coloca no buffer
 
                       # imprimeo expoente com 2 digitos (maximo E+38)
                       li t1, 10                             # carrega 10
-                      fcvt.w.s  tp, ft3                     # passa ft3 para t0
+                      fcvt.w.s tp, ft3                      # passa ft3 para t0
                       div t0, tp, t1                        # divide por 10 (dezena)
                       rem t2, tp, t1                        # t0 = quociente, t2 = resto
                       addi t0, t0, 48                       # converte para ascii
@@ -1083,7 +1083,7 @@ ehDesnormprintFloat:  la a0, NumDesnormP                    # string numero desn
 eh0printFloat:        la a0, NumZero                        # string do zero
                       j fimprintFloat                       # imprime a string
 
-ehExp255printFloat:   beq   t1, zero, ehInfprintFloat       # se mantissa eh zero entao eh Infinito
+ehExp255printFloat:   beq t1, zero, ehInfprintFloat         # se mantissa eh zero entao eh Infinito
 
 ehNaNprintfFloat:     la a0, NumNaN                         # string do NaN
                       j fimprintFloat                       # imprime string
@@ -1114,7 +1114,7 @@ readFloat:            addi sp, sp, -4                       # aloca espaco
                       mv s1, a3                             # numero de caracteres digitados
                       la s7, TempBuffer                     # Endereco do primeiro caractere
 
-lePrimeiroreadFloat:  mv   t0, s7                           # Endereco de Inicio
+lePrimeiroreadFloat:  mv t0, s7                             # Endereco de Inicio
                       lb t1, 0(t0)                          # le primeiro caractere
                       li tp, 'e'                            # TP = 101 = 'e'
                       beq t1, tp, insere0AreadFloat         # insere '0' antes
@@ -1153,7 +1153,7 @@ leUltimoreadFloat:    lb t1, 0(s0)                          # le ultimo caracter
                       beq t1, tp, insere0PreadFloat         # insere '0' depois
                       j inicioreadFloat
 
-insere0PreadFloat:    addi  s0, s0, 1                       # desloca o ultimo endereco para o proximo
+insere0PreadFloat:    addi s0, s0, 1                        # desloca o ultimo endereco para o proximo
                       addi s1, s1, 1                        # incrementa o num. caracteres
                       li t1,'0'                             # ascii '0'
                       sb t1,0(s0)                           # escreve '0' no ultimo
@@ -1218,14 +1218,14 @@ fracreadFloat:        fcvt.s.w ft2, zero                    # zera parte fracion
                       addi t0, s2, 1                        # endereco depois do ponto
                       fdiv.s ft3, ft1, ft6                  # ft3 inicial 0.1
 
-loopfracreadFloat:   bge   t0, s3, fimfracreadFloat         # endereco eh 'e' 'E' ou >ultimo
+loopfracreadFloat:    bge t0, s3, fimfracreadFloat          # endereco eh 'e' 'E' ou >ultimo
                       lb t1, 0(t0)                          # le o caracter
                       li tp, '0'                            # TP = 48 = '0'
                       blt t1, tp, erroreadFloat             # nao eh valido
                       li tp, '9'                            # TP = 57 = '9'
                       bgt t1, tp, erroreadFloat             # nao eh valido
                       addi t1, t1, -48                      # converte ascii para decimal
-                      fcvt.s.w   ft2, t1                    # digito lido em float
+                      fcvt.s.w ft2, t1                      # digito lido em float
 
                       fmul.s ft2, ft2, ft3                  # multiplica por dezena/centena
                       fadd.s fa0, fa0, ft2                  # soma no resultado
@@ -1253,7 +1253,7 @@ pulapotsinalreadFloat:mv s5, t0                             # Neste ponto s5 con
                       fmv.s ft3, ft1                        # ft3 un/dez/cen = 1
 
                       ### Encontra o expoente inteiro em t2
-expreadFloat:          li t2, 0                              # zera expoente
+expreadFloat:         li t2, 0                              # zera expoente
                       mv t0, s0                             # endereco do ultimo caractere da string
                       li t3, 10                             # numero dez
                       li t4, 1                              # und/dez/cent
@@ -1269,11 +1269,11 @@ loopexpreadFloat:     blt t0, s5, fimexpreadFloat           # ainda nao eh o end
 
 fimexpreadFloat:
                       # calcula o numero em ft2 o numero 10^exp
-                      fmv.s   ft2, ft1                      # numero 10^exp  inicial=1
-                      fmv.s   ft3, ft6                      # se o sinal for + ft3 eh 10
+                      fmv.s ft2, ft1                        # numero 10^exp  inicial=1
+                      fmv.s ft3, ft6                        # se o sinal for + ft3 eh 10
                       li tp, 0x00000000                     # TP = ZERO
                       beq s4, tp, sinalexpPosreadFloat      # se sinal exp positivo
-                      fdiv.s   ft3, ft1, ft6                # se o final for - ft3 eh 0.1
+                      fdiv.s ft3, ft1, ft6                  # se o final for - ft3 eh 0.1
 sinalexpPosreadFloat: li t0, 0                              # contador
 sinalexpreadFloat:    beq t0, t2, fimsinalexpreadFloat      # se chegou ao fim
                       fmul.s ft2, ft2, ft3                  # multiplica pelo fator 10 ou 0.1
@@ -1281,7 +1281,7 @@ sinalexpreadFloat:    beq t0, t2, fimsinalexpreadFloat      # se chegou ao fim
                       j sinalexpreadFloat
 fimsinalexpreadFloat:
 
-                      fmul.s   fa0, fa0, ft2                # multiplicacao final!
+                      fmul.s fa0, fa0, ft2                  # multiplicacao final!
 
                       la t0, TempBuffer                     # ajuste final do sinal do numero
                       lb t1, 0(t0)                          # le primeiro caractere
