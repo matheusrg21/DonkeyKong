@@ -176,84 +176,84 @@ exceptionHandling:    addi sp, sp, -36
 #  ALOCACAO DE REGISTRADORES QUE SERAO UTILIZADOS NA DETECCAO DE EXCECAO                     #
 ##############################################################################################
 
-                      li a0 0xC0                            # PRINTA TELA DO BITMAP DE AZUL
-                      li a7 148
+                      li a0, 0xC0                           # PRINTA TELA DO BITMAP DE AZUL
+                      li a7, 148
                       ecall
 
-                      li a7 104                             # ECALL PARA PRINTAR STRING NA TELA
-                      li a1 2                               # ORIGEM-X DA POSICAO DO BITMAP PARA PRINTAR STRING
-                      li a2 2                               # ORIGEM-Y DA POSICAO DO BITMAP PARA PRINTAR STRING
-                      li a3 0xC0FF                          # set color (white font on blue background)
-                      li a4 0                               # use frame 0
+                      li a7, 104                            # ECALL PARA PRINTAR STRING NA TELA
+                      li a1, 2                              # ORIGEM-X DA POSICAO DO BITMAP PARA PRINTAR STRING
+                      li a2, 2                              # ORIGEM-Y DA POSICAO DO BITMAP PARA PRINTAR STRING
+                      li a3, 0xC0FF                         # set color (white font on blue background)
+                      li a4, 0                              # use frame 0
 
-                      la a0 str_error                       # PRINTA A MENSAGEM "Error: " NO BITMAP
+                      la a0, str_error                      # PRINTA A MENSAGEM "Error: " NO BITMAP
                       ecall
 
                       mv a1 a0                              # a0 contem o endereco no bitmap do ultimo lugar
 
-                      csrrw t0 66 zero                      # t0 = valor de ucause
+                      csrrw t0, 66, zero                    # t0 = valor de ucause
 
-                      beq t0 zero instrMisaligned           # UCAUSE = 0
+                      beq t0, zero, instrMisaligned         # UCAUSE = 0
 
-                      addi t1 zero 1
-                      beq t0 t1 instrAccessFault            # UCAUSE = 1
+                      addi t1, zero, 1
+                      beq t0, t1, instrAccessFault          # UCAUSE = 1
 
-                      addi t1 t1 1
-                      beq t0 t1 illegalInstruction          # UCAUSE = 2
+                      addi t1, t1, 1
+                      beq t0, t1, illegalInstruction        # UCAUSE = 2
 
-                      addi t1 t1 2
-                      beq t0 t1 loadMisaligned              # UCAUSE = 4
+                      addi t1, t1, 2
+                      beq t0, t1, loadMisaligned            # UCAUSE = 4
 
-                      addi t1 t1 1
-                      beq t0 t1 loadAccessFault             # UCAUSE = 5
+                      addi t1, t1, 1
+                      beq t0, t1, loadAccessFault           # UCAUSE = 5
 
-                      addi t1 t1 1
-                      beq t0 t1 storeMisaligned             # UCAUSE = 6
+                      addi t1, t1, 1
+                      beq t0, t1, storeMisaligned           # UCAUSE = 6
 
-                      addi t1 t1 1
-                      beq t0 t1 storeAccessFault            # UCAUSE = 7
+                      addi t1, t1, 1
+                      beq t0, t1, storeAccessFault          # UCAUSE = 7
 
-                      addi t1 t1 1
-                      beq t0 t1 environmentCall             # UCAUSE = 8
+                      addi t1, t1, 1
+                      beq t0, t1, environmentCall           # UCAUSE = 8
 
-instrMisaligned:      la a0 instr_misaligned                # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+instrMisaligned:      la a0, instr_misaligned               # a0 CONTEM A STRING QUE DEVE SER PRINTADA
                       ecall
                       j showPC
 
-instrAccessFault:     la a0 instr_access_fault              # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+instrAccessFault:     la a0, instr_access_fault             # a0 CONTEM A STRING QUE DEVE SER PRINTADA
                       ecall
                       j showPC
 
-illegalInstruction:   la a0 illegal_instruction             # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+illegalInstruction:   la a0, illegal_instruction            # a0 CONTEM A STRING QUE DEVE SER PRINTADA
                       ecall
                       j showPC
 
-loadMisaligned:       la a0 load_misaligned                 # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+loadMisaligned:       la a0, load_misaligned                # a0 CONTEM A STRING QUE DEVE SER PRINTADA
                       ecall
                       j showPC
 
-loadAccessFault:      la a0 load_access_fault               # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+loadAccessFault:      la a0, load_access_fault              # a0 CONTEM A STRING QUE DEVE SER PRINTADA
                       ecall
                       j showPC
 
-storeMisaligned:      la a0 store_misaligned                # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+storeMisaligned:      la a0, store_misaligned               # a0 CONTEM A STRING QUE DEVE SER PRINTADA
                       ecall
                       j showPC
 
-storeAccessFault:     la a0 store_access_fault              # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+storeAccessFault:     la a0, store_access_fault             # a0 CONTEM A STRING QUE DEVE SER PRINTADA
                       ecall
                       j showPC
 
 environmentCall:      j ecallException
 
-showPC:               li a1 1                               # ORIGEM-X DA POSICAO DO BITMAP PARA PRINTAR STRING
-                      li a2 10                              # ORIGEM-Y DA POSICAO DO BITMAP PARA PRINTAR STRING (UMA LINHA ABAIXO -> COORDENADA Y ANTERIOR + 8px)
-                      la a0 str_PC
+showPC:               li a1, 1                              # ORIGEM-X DA POSICAO DO BITMAP PARA PRINTAR STRING
+                      li a2, 10                             # ORIGEM-Y DA POSICAO DO BITMAP PARA PRINTAR STRING (UMA LINHA ABAIXO -> COORDENADA Y ANTERIOR + 8px)
+                      la a0, str_PC
                       ecall
 
-                      mv a1 a0                              # a1 contem o endereco no bitmap do ultimo lugar
-                      csrrw a0 65 zero                      # A0 CONTEM O VALOR DE UEPC
-                      li a7 134                             # ECALL PARA PRINTAR STRING NO BITMAP
+                      mv a1, a0                             # a1 contem o endereco no bitmap do ultimo lugar
+                      csrrw a0, 65, zero                    # A0 CONTEM O VALOR DE UEPC
+                      li a7, 134                            # ECALL PARA PRINTAR STRING NO BITMAP
                       ecall
 
 fim:                  lw ra,  0(sp)
