@@ -29,7 +29,15 @@ main:                 li s0, 0                              # Current frame
                       li s1, 0                              # Mario 'x' position
                       li s2, 217                            # Mario 'y' position
 
-main_loop:            la a0, fundo                          # Load background image addr
+main_loop:            call paint_scene                      # Paint the whole scene on the screen
+                      call handle_input                     # Found a key! Let's do something with it
+                      j main_loop                           # Continue the game loop
+
+# Fn paint_scene() ---------------------------------------- #
+paint_scene:          addi sp, sp, -4
+                      sw ra, 0(sp)
+
+                      la a0, fundo                          # Load background image addr
                       li a1, 0                              # Set 'x' position to start painting
                       li a2, 0                              # Set 'y' position to start painting
                       mv a3, s0                             # Select which frame to paint into
@@ -45,8 +53,42 @@ main_loop:            la a0, fundo                          # Load background im
                       sw s0, 0(t0)                          # Show the current frame
                       xori s0, s0, 1                        # Invert selection of the next frame
 
+                      lw ra, 0(sp)
+                      addi sp, sp ,4
+                      ret
+
+# End paint_scene ----------------------------------------- #
+
+# Fn handle_input() --------------------------------------- #
+handle_input:         addi sp, sp, -4
+                      sw ra, 0(sp)
+
                       call key                              # Try to read a key from the keyboard
-                      j main_loop                           # Continue the game loop
+                      beqz a0, _handle_input_end            # Do nothing if key not found
+
+                      # Check for each key and jump to the apropriate handler
+                      CASE a0, KEY_LEFT, _handle_key_left
+                      CASE a0, KEY_RIGHT, _handle_key_right
+                      CASE a0, KEY_UP, _handle_key_up
+                      CASE a0, KEY_DOWN, _handle_key_down
+
+_handle_input_end:    lw ra, 0(sp)
+                      addi sp, sp, 4
+                      ret
+
+_handle_key_left:     addi s1, s1, -12
+                      j _handle_input_end
+
+_handle_key_right:    addi s1, s1, 12
+                      j _handle_input_end
+
+_handle_key_up:       addi s2, s2, -12
+                      j _handle_input_end
+
+_handle_key_down:     addi s2, s2, 12
+                      j _handle_input_end
+
+# End handle_input ---------------------------------------- #
 
 # Fn find_key() -> u8? ------------------------------------ #
 #                                                           #
