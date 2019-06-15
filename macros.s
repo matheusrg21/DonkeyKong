@@ -1,17 +1,17 @@
-# Macro POSITION(reg, reg, reg) -----------------
+# Macro POSITION(reg, reg, reg) ----------------------------
 #
-# Produces the apropriate offset for painting at
-# the input 'x' and 'y' position
+# Produces the apropriate offset for painting at the input
+# 'x' and 'y' position
 .macro POSITION(%out, %x, %y)
                       li %out, DISPLAY_W                    # Load display width
                       mul %out, %y, %out                    # Multiply that by the 'y' position
                       add %out, %x, %out                    # Get the final offset
 .end_macro
 
-# Macro DISPLAY(reg, reg, reg) ------------------
+# Macro DISPLAY(reg, reg, reg) -----------------------------
 #
-# Produces the full addr for the display at the
-# provided frame and offset
+# Produces the full addr for the display at the provided
+# frame and offset
 .macro DISPLAY(%out, %offset, %frame)
                       mv tp, %offset
                       beqz %frame, frame_0
@@ -21,22 +21,36 @@ frame_0:              li %out, DISPLAY_0
 end:                  add %out, %out, tp
 .end_macro
 
-######### Verifica se eh a DE1-SoC ###############
+# Macro CASE(reg, value, label) ----------------------------
+#
+# If the value in reg is equal to value, then jump to label
+.macro CASE(%reg, %value, %label)
+                      li t0, %value
+                      beq t0, %reg, %label
+.end_macro
+
+# Macro DE1(label) -----------------------------------------
+#
+# Verifica se eh a DE1-SoC
 .macro DE1(%salto)
                       li tp, 0x10008000                     # carrega tp = 0x10008000
                       bne gp, tp, %salto                    # Na DE1 gp = 0 ! Não tem segmento .extern
 .end_macro
 
-######### Seta o endereco UTVEC ###############
+# Macro M_SetEcall(label) ----------------------------------
+#
+# Seta o endereco UTVEC
 .macro M_SetEcall(%label)
                       la t6, %label                         # carrega em t6 o endereço base das rotinas do sistema ECALL
                       csrrw zero, 5, t6                     # seta utvec (reg 5) para o endereço t6
                       csrrsi zero, 0, 1                     # seta o bit de habilitação de interrupção em ustatus (reg 0)
                       la tp, UTVEC                          # caso nao tenha csrrw apenas salva o endereco %label em UTVEC
                       sw t6, 0(tp)
- .end_macro
+.end_macro
 
-######### Chamada de Ecall #################
+# Macro M_Ecall --------------------------------------------
+#
+# Chamada de Ecall
 .macro M_Ecall
                       DE1(NotECALL)
                       ecall                                 # tem ecall? só chama
@@ -47,16 +61,18 @@ NotECALL:             la tp, UEPC
                       lw tp, 4(tp)                          # le UTVEC
                       jalr zero, tp, 0                      # chama UTVEC
 FimECALL:             nop
- .end_macro
+.end_macro
 
-######### Chamada de Uret #################
+# Macro M_Uret ---------------------------------------------
+#
+# Chamada de Uret
 .macro M_Uret
                       DE1(NotURET)
                       uret                                  # tem uret? só retorna
 NotURET:              la tp, UEPC                           # nao tem uret
                       lw tp, 0(tp)                          # carrega o endereco UEPC
                       jalr zero, tp, 0                      # pula para UEPC
- .end_macro
+.end_macro
 
                       # definicao do mapa de enderecamento de MMIO
                       .eqv VGAADDRESSINI0 0xFF000000
