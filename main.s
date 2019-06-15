@@ -23,6 +23,7 @@
                       .include "img/jump_man_parado_direita_16x16.s"
 
                       .text
+                      M_SetEcall(exceptionHandling)
 
 main:                 li s0, 0                              # Current frame
                       li s1, 0                              # Mario 'x' position
@@ -87,3 +88,5 @@ _paint_loop:          lw t5, 0(a0)                          # Load pixel from im
                       ret                                   # Yes we are!
 
 # End paint ----------------------------------------------- #
+
+                      .include "./SYSTEMv14.s"
