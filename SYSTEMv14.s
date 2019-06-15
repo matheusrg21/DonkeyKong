@@ -293,91 +293,56 @@ ecallException:       PUSH_REGS
                       li t6, 0
 
                       # Verifica o numero da chamada do sistema
-                      li t0,  10
-                      beq t0, a7, goToExit                  # ecall exit
-                      li t0, 110
-                      beq t0, a7, goToExit                  # ecall exit
+                      CASE a7,  10, goToExit
+                      CASE a7, 110, goToExit
 
-                      li t0,   1                            # ecall 1 = print int
-                      beq t0, a7, goToPrintInt
-                      li t0, 101                            # ecall 1 = print int
-                      beq t0, a7, goToPrintInt
+                      CASE a7,   1, goToPrintInt
+                      CASE a7, 101, goToPrintInt
 
-                      li t0,   2                            # ecall 2 = print float
-                      beq t0, a7, goToPrintFloat
-                      li t0, 102                            # ecall 2 = print float
-                      beq t0, a7, goToPrintFloat
+                      CASE a7,   2, goToPrintFloat
+                      CASE a7, 102, goToPrintFloat
 
-                      li t0,   4                            # ecall 4 = print string
-                      beq t0, a7, goToPrintString
-                      li t0, 104                            # ecall 4 = print string
-                      beq t0, a7, goToPrintString
+                      CASE a7,   4, goToPrintString
+                      CASE a7, 104, goToPrintString
 
-                      li t0,   5                            # ecall 5 = read int
-                      beq t0, a7, goToReadInt
-                      li t0, 105                            # ecall 5 = read int
-                      beq t0, a7, goToReadInt
+                      CASE a7,   5, goToReadInt
+                      CASE a7, 105, goToReadInt
 
-                      li t0,   6                            # ecall 6 = read float
-                      beq t0, a7, goToReadFloat
-                      li t0, 106                            # ecall 6 = read float
-                      beq t0, a7, goToReadFloat
+                      CASE a7,   6, goToReadFloat
+                      CASE a7, 106, goToReadFloat
 
-                      li t0,   8                            # ecall 8 = read string
-                      beq t0, a7, goToReadString
-                      li t0, 108                            # ecall 8 = read string
-                      beq t0, a7, goToReadString
+                      CASE a7,   8, goToReadString
+                      CASE a7, 108, goToReadString
 
-                      li t0,  11                            # ecall 11 = print char
-                      beq t0, a7, goToPrintChar
-                      li t0, 111                            # ecall 11 = print char
-                      beq t0, a7, goToPrintChar
+                      CASE a7,  11, goToPrintChar
+                      CASE a7, 111, goToPrintChar
 
-                      li t0,  12                            # ecall 12 = read char
-                      beq t0, a7, goToReadChar
-                      li t0, 112                            # ecall 12 = read char
-                      beq t0, a7, goToReadChar
+                      CASE a7,  12, goToReadChar
+                      CASE a7, 112, goToReadChar
 
-                      li t0,  30                            # ecall 30 = time
-                      beq t0, a7, goToTime
-                      li t0, 130                            # ecall 30 = time
-                      beq t0, a7, goToTime
+                      CASE a7,  30, goToTime
+                      CASE a7, 130, goToTime
 
-                      li t0,  32                            # ecall 32 = sleep
-                      beq t0, a7, goToSleep
-                      li t0, 132                            # ecall 32 = sleep
-                      beq t0, a7, goToSleep
+                      CASE a7,  32, goToSleep
+                      CASE a7, 132, goToSleep
 
-                      li t0,  41                            # ecall 41 = random
-                      beq t0, a7, goToRandom
-                      li t0, 141                            # ecall 41 = random
-                      beq t0, a7, goToRandom
+                      CASE a7,  41, goToRandom
+                      CASE a7, 141, goToRandom
 
-                      li t0,  34                            # ecall 34 = print hex
-                      beq t0, a7, goToPrintHex
-                      li t0, 134                            # ecall 34 = print hex
-                      beq t0, a7, goToPrintHex
+                      CASE a7,  34, goToPrintHex
+                      CASE a7, 134, goToPrintHex
 
-                      li t0,  31                            # ecall 31 = MIDI out
-                      beq t0, a7, goToMidiOut               # Generate tone and return immediately
-                      li t0, 131                            # ecall 31 = MIDI out
-                      beq t0, a7, goToMidiOut
+                      CASE a7,  31, goToMidiOut
+                      CASE a7, 131, goToMidiOut
 
-                      li t0,  33                            # ecall 33 = MIDI out synchronous
-                      beq t0, a7, goToMidiOutSync           # Generate tone and return upon tone completion
-                      li t0, 133                            # ecall 33 = MIDI out synchronous
-                      beq t0, a7, goToMidiOutSync
+                      CASE a7,  33, goToMidiOutSync
+                      CASE a7, 133, goToMidiOutSync
 
-                      li t0,  48                            # ecall 48 = CLS
-                      beq t0, a7, goToCLS
-                      li t0, 148                            # ecall 48 = CLS
-                      beq t0, a7, goToCLS
+                      CASE a7,  48, goToCLS
+                      CASE a7, 148, goToCLS
 
-                      li t0,  47                            # ecall 47 = DrawLine
-                      beq t0, a7, goToBRES
-                      li t0, 147                            # ecall 47 = DrawLine
-                      beq t0, a7, goToBRES
-
+                      CASE a7,  47, goToBRES
+                      CASE a7, 147, goToBRES
 
 endEcall:             POP_REGS
                       j endException
