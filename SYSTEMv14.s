@@ -159,126 +159,91 @@ str_PC:               .string "PC: "
                       .text
 
 ###### Devem ser colocadas aqui as identificações das interrupções e exceções
-exceptionHandling:    addi sp, sp, -36
-                      sw ra,  0(sp)
-                      sw a0,  4(sp)
-                      sw a1,  8(sp)
-                      sw a2, 12(sp)
-                      sw a3, 16(sp)
-                      sw a4, 20(sp)
-                      sw a7, 24(sp)
-                      sw t0, 28(sp)
-                      sw t1, 32(sp)
-##############################################################################################
-#  ALOCACAO DE REGISTRADORES QUE SERAO UTILIZADOS NA DETECCAO DE EXCECAO                     #
-##############################################################################################
+exceptionHandling:    PUSH_REGS                             # Store all registers on the stack
 
-                      li a0, 0xC0                           # PRINTA TELA DO BITMAP DE AZUL
-                      li a7, 148
-                      ecall
+                      csrrw s0, 66, zero                    # Load exception cause
 
-                      li a7, 104                            # ECALL PARA PRINTAR STRING NA TELA
-                      li a1, 2                              # ORIGEM-X DA POSICAO DO BITMAP PARA PRINTAR STRING
-                      li a2, 2                              # ORIGEM-Y DA POSICAO DO BITMAP PARA PRINTAR STRING
-                      li a3, 0xC0FF                         # set color (white font on blue background)
-                      li a4, 0                              # use frame 0
+                      CASE s0, 8, ecallException            # Common case first
+                      CASE s0, 0, instrMisaligned
+                      CASE s0, 1, instrAccessFault
+                      CASE s0, 2, illegalInstruction
+                      CASE s0, 4, loadMisaligned
+                      CASE s0, 5, loadAccessFault
+                      CASE s0, 6, storeMisaligned
+                      CASE s0, 7, storeAccessFault
 
-                      la a0, str_error                      # PRINTA A MENSAGEM "Error: " NO BITMAP
-                      ecall
-
-                      mv a1 a0                              # a0 contem o endereco no bitmap do ultimo lugar
-
-                      csrrw t0, 66, zero                    # t0 = valor de ucause
-
-                      beq t0, zero, instrMisaligned         # UCAUSE = 0
-
-                      addi t1, zero, 1
-                      beq t0, t1, instrAccessFault          # UCAUSE = 1
-
-                      addi t1, t1, 1
-                      beq t0, t1, illegalInstruction        # UCAUSE = 2
-
-                      addi t1, t1, 2
-                      beq t0, t1, loadMisaligned            # UCAUSE = 4
-
-                      addi t1, t1, 1
-                      beq t0, t1, loadAccessFault           # UCAUSE = 5
-
-                      addi t1, t1, 1
-                      beq t0, t1, storeMisaligned           # UCAUSE = 6
-
-                      addi t1, t1, 1
-                      beq t0, t1, storeAccessFault          # UCAUSE = 7
-
-                      addi t1, t1, 1
-                      beq t0, t1, environmentCall           # UCAUSE = 8
+endException:         csrrw t0, 65, zero                    # Read exception addr from uepc (reg 65)
+                      addi t0, t0, 4                        # Move it to the next instruction
+                      csrrw zero, 65, t0                    # Store the result in uepc
+                      POP_REGS                              # Restore registers (note: a0 and fa0 are not restored)
+                      uret                                  # Return from the exception
 
 instrMisaligned:      la a0, instr_misaligned               # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      ecall
-                      j showPC
+                      j panic
 
 instrAccessFault:     la a0, instr_access_fault             # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      ecall
-                      j showPC
+                      j panic
 
 illegalInstruction:   la a0, illegal_instruction            # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      ecall
-                      j showPC
+                      j panic
 
 loadMisaligned:       la a0, load_misaligned                # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      ecall
-                      j showPC
+                      j panic
 
 loadAccessFault:      la a0, load_access_fault              # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      ecall
-                      j showPC
+                      j panic
 
 storeMisaligned:      la a0, store_misaligned               # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      ecall
-                      j showPC
+                      j panic
 
 storeAccessFault:     la a0, store_access_fault             # a0 CONTEM A STRING QUE DEVE SER PRINTADA
+                      j panic
+
+# Fn panic(msg: &str) -> ! -------------------------------- #
+panic:                mv s0, a0                             # Save addr of the message that we'll paint later
+
+                      # Make sure the user can see what we're going to paint.
+                      li t0, VGAFRAMESELECT                 # Load frame select addr
+                      sw zero, 0(t0)                        # Set the frame 0 as the current one
+
+                      li a0, 0xC0                           # Select blue color
+                      li a1, 0                              # Select current frame
+                      call clsCLS                           # Paint the whole screen
+
+                      la a0, str_error                      # Load message addr
+                      li a1, 0                              # Set 'x' position
+                      li a2, 0                              # Set 'y' position
+                      li a3, 0xC0FF                         # Set color to paint the chars (white letter on blue background)
+                      li a4, 0                              # Use frame 0
+                      call printString                      # Paint the message on the screen
+
+                      mv a0, s0                             # Restore addr of the error description string
+                      li a1, 56                             # Set 'x' position
+                      li a2, 0                              # Set 'y' position
+                      li a3, 0xC0FF                         # Set color to paint the chars (white letter on blue background)
+                      li a4, 0                              # Use frame 0
+                      call printString                      # Paint the message on the screen
+
+                      la a0, str_PC                         # Load message addr
+                      li a1, 0                              # Set 'x' position
+                      li a2, 8                              # Set 'y' position
+                      li a3, 0xC0FF                         # Set color to paint the chars (white letter on blue background)
+                      li a4, 0                              # Use frame 0
+                      call printString                      # Paint the message on the screen
+
+                      csrrw a0, 65, zero                    # Load exception addr
+                      li a1, 32                             # Set 'x' position
+                      li a2, 8                              # Set 'y' position
+                      li a3, 0xC0FF                         # Set color to paint the chars (white letter on blue background)
+                      li a4, 0                              # Use frame 0
+                      call printHex                         # Paint the exception addr in hex
+
+                      li a7, 10                             # End the program execution
                       ecall
-                      j showPC
+# End panic ----------------------------------------------- #
 
-environmentCall:      j ecallException
-
-showPC:               li a1, 1                              # ORIGEM-X DA POSICAO DO BITMAP PARA PRINTAR STRING
-                      li a2, 10                             # ORIGEM-Y DA POSICAO DO BITMAP PARA PRINTAR STRING (UMA LINHA ABAIXO -> COORDENADA Y ANTERIOR + 8px)
-                      la a0, str_PC
-                      ecall
-
-                      mv a1, a0                             # a1 contem o endereco no bitmap do ultimo lugar
-                      csrrw a0, 65, zero                    # A0 CONTEM O VALOR DE UEPC
-                      li a7, 134                            # ECALL PARA PRINTAR STRING NO BITMAP
-                      ecall
-
-fim:                  lw ra,  0(sp)
-                      lw a0,  4(sp)
-                      lw a1,  8(sp)
-                      lw a2, 12(sp)
-                      lw a3, 16(sp)
-                      lw a4, 20(sp)
-                      lw a7, 24(sp)
-                      lw t0, 28(sp)
-                      lw t1, 32(sp)
-                      addi sp, sp ,36
-##############################################################################################
-#  DESALOCACAO DE REGISTRADORES QUE FORAO UTILIZADOS NA DETECCAO DE EXCECAO                  #
-##############################################################################################
-
-
-# TRAVA O PROCESSADOR POIS HOUVE EXCECAO
-infiniteLoop:         j infiniteLoop
-
-
-endException:         csrrw tp, 65, zero                    # le o valor de EPC salvo no registrador uepc (reg 65)
-                      addi tp, tp, 4                        # soma 4 para obter a instrucao seguinte ao ecall
-                      csrrw zero, 65, tp                    # coloca no registrador uepc
-                      M_Uret                                # retorna PC=uepc
-
-############# interrupcao de ECALL ###################
-ecallException:       PUSH_REGS
+# interrupcao de ECALL ------------------------------------ #
+ecallException:
 
                       # Zera os valores dos registradores temporarios
                       li t0, 0
@@ -341,64 +306,61 @@ ecallException:       PUSH_REGS
                       CASE a7,  47, goToBRES
                       CASE a7, 147, goToBRES
 
-endEcall:             POP_REGS
-                      j endException
-
-goToExit:             DE1(goToExitDE2)                      # se for a DE2
+goToExit:             DE1 goToExitDE1                       # se for a DE1
                       li a7, 10                             # chama o ecall normal do Rars
                       ecall                                 # exit ecall
 
-goToExitDE2:          j goToExitDE2                         # trava o processador : Não tem sistema operacional!
+goToExitDE1:          j goToExitDE1                         # trava o processador : Não tem sistema operacional!
 
 goToPrintInt:         jal printInt                          # chama printInt
-                      j endEcall
+                      j endException
 
 goToPrintString:      jal printString                       # chama printString
-                      j endEcall
+                      j endException
 
 goToPrintChar:        jal printChar                         # chama printChar
-                      j endEcall
+                      j endException
 
 goToPrintFloat:       jal printFloat                        # chama printFloat
-                      j endEcall
+                      j endException
 
 goToReadChar:         jal readChar                          # chama readChar
-                      j endEcall
+                      j endException
 
 goToReadInt:          jal readInt                           # chama readInt
-                      j endEcall
+                      j endException
 
 goToReadString:       jal readString                        # chama readString
-                      j endEcall
+                      j endException
 
 goToReadFloat:        jal readFloat                         # chama readFloat
-                      j endEcall
+                      j endException
 
 goToPrintHex:         jal printHex                          # chama printHex
-                      j endEcall
+                      j endException
 
 goToMidiOut:          jal midiOut                           # chama MIDIout
-                      j endEcall
+                      j endException
 
 goToMidiOutSync:      jal midiOutSync                       # chama MIDIoutSync
-                      j endEcall
+                      j endException
 
 goToTime:             jal time                              # chama time
-                      j endEcall
+                      j endException
 
 goToSleep:            jal sleep                             # chama sleep
-                      j endEcall
+                      j endException
 
 goToRandom:           jal random                            # chama random
-                      j endEcall
+                      j endException
 
 goToCLS:              jal clsCLS                            # chama CLS
-                      j endEcall
+                      j endException
 
 goToBRES:             jal BRESENHAM                         # chama BRESENHAM
-                      j endEcall
+                      j endException
 
-# ------------------------------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------- #
 
 # PrintInt ------------------------------------------------ #
 #  a0 = valor inteiro                                       #
