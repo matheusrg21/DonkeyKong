@@ -44,34 +44,6 @@ end:                  add %out, %out, tp
                       la t6, %label                         # carrega em t6 o endereço base das rotinas do sistema ECALL
                       csrrw zero, 5, t6                     # seta utvec (reg 5) para o endereço t6
                       csrrsi zero, 0, 1                     # seta o bit de habilitação de interrupção em ustatus (reg 0)
-                      la tp, UTVEC                          # caso nao tenha csrrw apenas salva o endereco %label em UTVEC
-                      sw t6, 0(tp)
-.end_macro
-
-# Macro M_Ecall --------------------------------------------
-#
-# Chamada de Ecall
-.macro M_Ecall
-                      DE1(NotECALL)
-                      ecall                                 # tem ecall? só chama
-                      j FimECALL
-NotECALL:             la tp, UEPC
-                      la t6, FimECALL                       # endereco após o ecall
-                      sw t6, 0(tp)                          # salva UEPC
-                      lw tp, 4(tp)                          # le UTVEC
-                      jalr zero, tp, 0                      # chama UTVEC
-FimECALL:             nop
-.end_macro
-
-# Macro M_Uret ---------------------------------------------
-#
-# Chamada de Uret
-.macro M_Uret
-                      DE1(NotURET)
-                      uret                                  # tem uret? só retorna
-NotURET:              la tp, UEPC                           # nao tem uret
-                      lw tp, 0(tp)                          # carrega o endereco UEPC
-                      jalr zero, tp, 0                      # pula para UEPC
 .end_macro
 
 # Macro SAVE_REGS ------------------------------------------
