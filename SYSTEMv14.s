@@ -512,17 +512,9 @@ NaoPulaLinha:         addi s0, s0, 1                        # proximo caractere
                       j loopprintString                     # volta ao loop
 
 fimloopprintString:   lw ra, 0(sp)                          # recupera ra
-                      lw s0, 0(sp)                          # recupera s0 original
+                      lw s0, 4(sp)                          # recupera s0 original
                       addi sp, sp, 8                        # libera espaco
-
-                      # GRUPO 4 - 2019/1 ------------------ #
-                      #                                     #
-                      # COM A ALINHA ABAIXO RETORNA EM a0 O #
-                      # VALOR DA ULTIMA POSICAO DA MEMORIA  #
-                      # DO VGA ESCRITA                      #
-                      # ----------------------------------- #
-                      mv a0 a1
-fimprintString:       ret                                   # retorna
+                      ret                                   # retorna
 
 
 # PrintChar ----------------------------------------------- #
