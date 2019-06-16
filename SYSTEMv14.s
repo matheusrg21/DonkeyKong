@@ -148,6 +148,7 @@ load_misaligned:      .string "Load address misaligned"
 load_access_fault:    .string "Load access fault"
 store_misaligned:     .string "Store address misaligned"
 store_access_fault:   .string "Store access fault"
+service_404:          .string "System service not found"
 
 str_PC:               .string "PC: "
 
@@ -305,6 +306,10 @@ ecallException:
 
                       CASE a7,  47, goToBRES
                       CASE a7, 147, goToBRES
+
+                      # There are no impl for the requested environment call service code
+                      la a0, service_404                    # Load not found msg
+                      j panic                               # It's time to panic
 
 goToExit:             DE1 goToExitDE1                       # se for a DE1
                       li a7, 10                             # chama o ecall normal do Rars
