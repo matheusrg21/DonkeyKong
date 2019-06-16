@@ -14,57 +14,7 @@
 # Luthiery Costa Cavalcante - 17/0040631
 # Matheus Breder Branquinho Nogueira - 17/0018997
 
-                      # definicao do mapa de enderecamento de MMIO
-                      .eqv VGAADDRESSINI0   0xFF000000
-                      .eqv VGAADDRESSFIM0   0xFF012C00
-                      .eqv VGAADDRESSINI1   0xFF100000
-                      .eqv VGAADDRESSFIM1   0xFF112C00
-                      .eqv NUMLINHAS        240
-                      .eqv NUMCOLUNAS       320
-                      .eqv VGAFRAMESELECT   0xFF200604
-
-                      .eqv KDMMIO_Ctrl      0xFF200000
-                      .eqv KDMMIO_Data      0xFF200004
-
-                      .eqv Buffer0Teclado   0xFF200100
-                      .eqv Buffer1Teclado   0xFF200104
-
-                      .eqv TecladoxMouse    0xFF200110
-                      .eqv BufferMouse      0xFF200114
-
-                      .eqv AudioBase        0xFF200160
-                      .eqv AudioINL         0xFF200160
-                      .eqv AudioINR         0xFF200164
-                      .eqv AudioOUTL        0xFF200168
-                      .eqv AudioOUTR        0xFF20016C
-                      .eqv AudioCTRL1       0xFF200170
-                      .eqv AudioCTRL2       0xFF200174
-
-                      # Sintetizador - 2015/1
-                      .eqv NoteData         0xFF200178
-                      .eqv NoteClock        0xFF20017C
-                      .eqv NoteMelody       0xFF200180
-                      .eqv MusicTempo       0xFF200184
-                      .eqv MusicAddress     0xFF200188
-
-                      .eqv IrDA_CTRL        0xFF20 0500
-                      .eqv IrDA_RX          0xFF20 0504
-                      .eqv IrDA_TX          0xFF20 0508
-
-                      .eqv STOPWATCH        0xFF200510
-
-                      .eqv LFSR             0xFF200514
-
-                      .eqv KeyMap0          0xFF200520
-                      .eqv KeyMap1          0xFF200524
-                      .eqv KeyMap2          0xFF200528
-                      .eqv KeyMap3          0xFF20052C
-
                       .data
-
-# UTVEC e UEPC Enquanto nao tem o sistema de gerenciamento de interrupcao e excecao
-UEPC:                 .word 0x00000000
-UTVEC:                .word 0x00000000
 
 # Tabela de caracteres desenhados segundo a fonte 8x8 pixels do ZX-Spectrum
 LabelTabChar:         .word
@@ -152,14 +102,10 @@ service_404:          .string "System service not found"
 
 str_PC:               .string "PC: "
 
-
-
 ### Obs.: a forma 'LABEL: instrucao' embora fique feio facilita o debug no Rars, por favor nao reformatar!!!
 
-########################################################################################
                       .text
 
-###### Devem ser colocadas aqui as identificações das interrupções e exceções
 exceptionHandling:    PUSH_REGS                             # Store all registers on the stack
 
                       csrrw s0, 66, zero                    # Load exception cause
