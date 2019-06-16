@@ -244,68 +244,38 @@ panic:                mv s0, a0                             # Save addr of the m
 # End panic ----------------------------------------------- #
 
 # interrupcao de ECALL ------------------------------------ #
-ecallException:
+ecallException:       li t0, 100                            # Load offset value
+                      blt a7, t0, find_ecall                # If ecall code lower than offset, skip the subtraction
+                      sub a7, a7, t0                        # Subtract offset from ecall code
 
                       # Zera os valores dos registradores temporarios
-                      li t0, 0
-                      li t1, 0
-                      li t2, 0
-                      li t3, 0
-                      li t4, 0
-                      li t5, 0
-                      li t6, 0
+                      # Pra que??
+                      # li t0, 0
+                      # li t1, 0
+                      # li t2, 0
+                      # li t3, 0
+                      # li t4, 0
+                      # li t5, 0
+                      # li t6, 0
 
                       # Verifica o numero da chamada do sistema
-                      CASE a7,  10, goToExit
-                      CASE a7, 110, goToExit
-
+find_ecall:           CASE a7,  10, goToExit
                       CASE a7,   1, goToPrintInt
-                      CASE a7, 101, goToPrintInt
-
                       CASE a7,   2, goToPrintFloat
-                      CASE a7, 102, goToPrintFloat
-
                       CASE a7,   4, goToPrintString
-                      CASE a7, 104, goToPrintString
-
                       CASE a7,   5, goToReadInt
-                      CASE a7, 105, goToReadInt
-
                       CASE a7,   6, goToReadFloat
-                      CASE a7, 106, goToReadFloat
-
                       CASE a7,   8, goToReadString
-                      CASE a7, 108, goToReadString
-
                       CASE a7,  11, goToPrintChar
-                      CASE a7, 111, goToPrintChar
-
                       CASE a7,  12, goToReadChar
-                      CASE a7, 112, goToReadChar
-
                       CASE a7,  30, goToTime
-                      CASE a7, 130, goToTime
-
                       CASE a7,  32, goToSleep
-                      CASE a7, 132, goToSleep
-
                       CASE a7,  41, goToRandom
-                      CASE a7, 141, goToRandom
-
                       CASE a7,  34, goToPrintHex
-                      CASE a7, 134, goToPrintHex
-
                       CASE a7,  31, goToMidiOut
-                      CASE a7, 131, goToMidiOut
-
                       CASE a7,  33, goToMidiOutSync
-                      CASE a7, 133, goToMidiOutSync
-
                       CASE a7,  48, goToCLS
-                      CASE a7, 148, goToCLS
-
                       CASE a7,  47, goToBRES
-                      CASE a7, 147, goToBRES
 
                       # There are no impl for the requested environment call service code
                       la a0, service_404                    # Load not found msg
