@@ -90,16 +90,6 @@ NumNaN:               .string "NaN"
 #  STRINGS NECESSARIAS PARA PRINTAR NA TELA MENSAGENS DE ERRO                                #
 ##############################################################################################
 str_error:            .string "Error: "
-
-instr_misaligned:     .string "Instruction address misaligned"
-instr_access_fault:   .string "Instruction access fault"
-illegal_instruction:  .string "Illegal instruction"
-load_misaligned:      .string "Load address misaligned"
-load_access_fault:    .string "Load access fault"
-store_misaligned:     .string "Store address misaligned"
-store_access_fault:   .string "Store access fault"
-service_404:          .string "System service not found"
-
 str_PC:               .string "PC: "
 
 ### Obs.: a forma 'LABEL: instrucao' embora fique feio facilita o debug no Rars, por favor nao reformatar!!!
@@ -125,26 +115,13 @@ endException:         csrrw t0, 65, zero                    # Read exception add
                       POP_REGS                              # Restore registers (note: a0 and fa0 are not restored)
                       uret                                  # Return from the exception
 
-instrMisaligned:      la a0, instr_misaligned               # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      j panic
-
-instrAccessFault:     la a0, instr_access_fault             # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      j panic
-
-illegalInstruction:   la a0, illegal_instruction            # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      j panic
-
-loadMisaligned:       la a0, load_misaligned                # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      j panic
-
-loadAccessFault:      la a0, load_access_fault              # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      j panic
-
-storeMisaligned:      la a0, store_misaligned               # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      j panic
-
-storeAccessFault:     la a0, store_access_fault             # a0 CONTEM A STRING QUE DEVE SER PRINTADA
-                      j panic
+instrMisaligned:      PANIC "Instruction address misaligned"
+instrAccessFault:     PANIC "Instruction access fault"
+illegalInstruction:   PANIC "Illegal instruction"
+loadMisaligned:       PANIC "Load address misaligned"
+loadAccessFault:      PANIC "Load access fault"
+storeMisaligned:      PANIC "Store address misaligned"
+storeAccessFault:     PANIC "Store access fault"
 
 # Fn panic(msg: &str) -> ! -------------------------------- #
 panic:                mv s0, a0                             # Save addr of the message that we'll paint later
@@ -224,8 +201,7 @@ find_ecall:           CASE a7,  10, goToExit
                       CASE a7,  47, goToBRES
 
                       # There are no impl for the requested environment call service code
-                      la a0, service_404                    # Load not found msg
-                      j panic                               # It's time to panic
+                      PANIC "System service not found"      # It's time to panic
 
 goToExit:             DE1 goToExitDE1                       # se for a DE1
                       li a7, 10                             # chama o ecall normal do Rars

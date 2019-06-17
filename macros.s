@@ -29,6 +29,20 @@ end:                  add %out, %out, tp
                       beq t0, %reg, %label
 .end_macro
 
+# Macro PANIC(string) --------------------------------------
+#
+# Is it time to panic? Are there any other way?
+.macro PANIC(%msg)
+                      .data
+
+msg:                  .string %msg
+
+                      .text
+
+                      la a0, msg
+                      j panic
+.end_macro
+
 # Macro DE1(label) -----------------------------------------
 #
 # Verifica se eh a DE1-SoC
@@ -216,7 +230,6 @@ end:                  add %out, %out, tp
                       .eqv NoteMelody     0xFF200180
                       .eqv MusicTempo     0xFF200184
                       .eqv MusicAddress   0xFF200188
-
 
                       .eqv IrDA_CTRL      0xFF20 0500
                       .eqv IrDA_RX        0xFF20 0504
