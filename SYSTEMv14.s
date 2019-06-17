@@ -171,34 +171,26 @@ ecallException:       li t0, 100                            # Load offset value
                       blt a7, t0, find_ecall                # If ecall code lower than offset, skip the subtraction
                       sub a7, a7, t0                        # Subtract offset from ecall code
 
-                      # Zera os valores dos registradores temporarios
-                      # Pra que??
-                      # li t0, 0
-                      # li t1, 0
-                      # li t2, 0
-                      # li t3, 0
-                      # li t4, 0
-                      # li t5, 0
-                      # li t6, 0
-
                       # Verifica o numero da chamada do sistema
-find_ecall:           CASE a7,  10, goToExit
-                      CASE a7,   1, goToPrintInt
-                      CASE a7,   2, goToPrintFloat
-                      CASE a7,   4, goToPrintString
-                      CASE a7,   5, goToReadInt
-                      CASE a7,   6, goToReadFloat
-                      CASE a7,   8, goToReadString
-                      CASE a7,  11, goToPrintChar
-                      CASE a7,  12, goToReadChar
-                      CASE a7,  30, goToTime
-                      CASE a7,  32, goToSleep
-                      CASE a7,  41, goToRandom
-                      CASE a7,  34, goToPrintHex
-                      CASE a7,  31, goToMidiOut
-                      CASE a7,  33, goToMidiOutSync
-                      CASE a7,  48, goToCLS
-                      CASE a7,  47, goToBRES
+find_ecall:           la ra, endException
+
+                      CASE a7, 10, goToExit
+                      CASE a7,  1, printInt
+                      CASE a7,  2, printFloat
+                      CASE a7,  4, printString
+                      CASE a7,  5, readInt
+                      CASE a7,  6, readFloat
+                      CASE a7,  8, readString
+                      CASE a7, 11, printChar
+                      CASE a7, 12, readChar
+                      CASE a7, 30, time
+                      CASE a7, 32, sleep
+                      CASE a7, 41, random
+                      CASE a7, 34, printHex
+                      CASE a7, 31, midiOut
+                      CASE a7, 33, midiOutSync
+                      CASE a7, 48, clsCLS
+                      CASE a7, 47, BRESENHAM
 
                       # There are no impl for the requested environment call service code
                       PANIC "System service not found"      # It's time to panic
@@ -208,54 +200,6 @@ goToExit:             DE1 goToExitDE1                       # se for a DE1
                       ecall                                 # exit ecall
 
 goToExitDE1:          j goToExitDE1                         # trava o processador : Não tem sistema operacional!
-
-goToPrintInt:         jal printInt                          # chama printInt
-                      j endException
-
-goToPrintString:      jal printString                       # chama printString
-                      j endException
-
-goToPrintChar:        jal printChar                         # chama printChar
-                      j endException
-
-goToPrintFloat:       jal printFloat                        # chama printFloat
-                      j endException
-
-goToReadChar:         jal readChar                          # chama readChar
-                      j endException
-
-goToReadInt:          jal readInt                           # chama readInt
-                      j endException
-
-goToReadString:       jal readString                        # chama readString
-                      j endException
-
-goToReadFloat:        jal readFloat                         # chama readFloat
-                      j endException
-
-goToPrintHex:         jal printHex                          # chama printHex
-                      j endException
-
-goToMidiOut:          jal midiOut                           # chama MIDIout
-                      j endException
-
-goToMidiOutSync:      jal midiOutSync                       # chama MIDIoutSync
-                      j endException
-
-goToTime:             jal time                              # chama time
-                      j endException
-
-goToSleep:            jal sleep                             # chama sleep
-                      j endException
-
-goToRandom:           jal random                            # chama random
-                      j endException
-
-goToCLS:              jal clsCLS                            # chama CLS
-                      j endException
-
-goToBRES:             jal BRESENHAM                         # chama BRESENHAM
-                      j endException
 
 # --------------------------------------------------------- #
 
