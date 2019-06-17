@@ -172,9 +172,9 @@ ecallException:       li t0, 100                            # Load offset value
                       sub a7, a7, t0                        # Subtract offset from ecall code
 
                       # Verifica o numero da chamada do sistema
-find_ecall:           la ra, endException
+find_ecall:           la ra, endException                   # Set the return addr for after handling the ecall
 
-                      CASE a7, 10, goToExit
+                      CASE a7, 10, exit
                       CASE a7,  1, printInt
                       CASE a7,  2, printFloat
                       CASE a7,  4, printString
@@ -195,13 +195,16 @@ find_ecall:           la ra, endException
                       # There are no impl for the requested environment call service code
                       PANIC "System service not found"      # It's time to panic
 
-goToExit:             DE1 goToExitDE1                       # se for a DE1
+# --------------------------------------------------------- #
+
+# Fn exit() -> ! ------------------------------------------ #
+exit:                 DE1 _exit_de1                         # se for a DE1
                       li a7, 10                             # chama o ecall normal do Rars
                       ecall                                 # exit ecall
 
-goToExitDE1:          j goToExitDE1                         # trava o processador : Não tem sistema operacional!
+_exit_de1:            j _exit_de1                           # trava o processador : Não tem sistema operacional!
 
-# --------------------------------------------------------- #
+# End exit------------------------------------------------- #
 
 # PrintInt ------------------------------------------------ #
 #  a0 = valor inteiro                                       #
