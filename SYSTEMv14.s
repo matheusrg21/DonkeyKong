@@ -205,11 +205,11 @@ printHex:             addi sp, sp, -4                       # aloca espaco
                       la t1, TabelaHexASCII                 # endereco da tabela HEX->ASCII
                       la t2, TempBuffer                     # onde a string sera montada
 
-                      li t3,'0'                             # Caractere '0'
-                      sb t3,0(t2)                           # Escreve '0' no Buffer da String
-                      li t3,'x'                             # Caractere 'x'
-                      sb t3,1(t2)                           # Escreve 'x' no Buffer da String
-                      addi t2,t2,2                          # novo endereco inicial da string
+                      li t3, '0'                            # Caractere '0'
+                      sb t3, 0(t2)                          # Escreve '0' no Buffer da String
+                      li t3, 'x'                            # Caractere 'x'
+                      sb t3, 1(t2)                          # Escreve 'x' no Buffer da String
+                      addi t2, t2, 2                        # novo endereco inicial da string
 
                       li t3, 28                             # contador de nibble   inicio = 28
 loopprintHex:         blt t3, zero, fimloopprintHex         # terminou? t3<0?
@@ -437,8 +437,8 @@ loopReadCharKDMMIODE2:lw a0, 0(t0)                          # le o bit de flag d
 
 
 ##### Tratamento para uso com o teclado PS2 da DE2 usando Buffer0 teclado
-#### muda a0, t0,t1,t2,t3 e s0
-#### Cuidar: ao entrar s0 ja deve conter o endereco la s0,LabelScanCode #####
+#### muda a0, t0, t1, t2, t3 e s0
+#### Cuidar: ao entrar s0 ja deve conter o endereco la s0, LabelScanCode #####
 readCharDE2:          li t0, Buffer0Teclado                 # Endereco buffer0
                       lw t1, 0(t0)                          # conteudo inicial do buffer
 
@@ -529,7 +529,7 @@ readInt:              addi sp, sp, -4                       # reserva espaco na 
                       li t3, 1                              # dezenas, centenas, etc
                       mv a0, zero                           # zera o numero
 
-loopReadInt:          beq a3,zero, fimReadInt               # Leu todos os digitos
+loopReadInt:          beq a3, zero, fimReadInt              # Leu todos os digitos
                       lb t1, (t0)                           # le um digito
                       li tp, 0x0000002D
                       beq t1, tp, ehnegReadInt              # = '-'
@@ -666,7 +666,7 @@ midiOutSyncDE2:       li t0, NoteData
 
                       # Melody = 1
                       lui t1, 0x08000
-                      slli t1,t1,4
+                      slli t1, t1, 4
 
                       # Definicao do Instrumento
                       andi t2, a2, 0x00F
@@ -710,7 +710,7 @@ fimmidiOutSync:       ret
 
 # PrintFloat ---------------------------------------------- #
 # imprime Float em fa0                                      #
-# na posicao (a1,a2)  cor a3                                #
+# na posicao (a1, a2)  cor a3                               #
 # --------------------------------------------------------- #
 # muda s0, s1
 
@@ -732,13 +732,13 @@ printFloat:           addi sp, sp, -4
                       li t0, '+'                            # define sinal '+'
                       fmv.x.s s1, fa0                       # recupera o numero float sem conversao
                       lui t2, 0x08000
-                      slli t2,t2,4
+                      slli t2, t2, 4
                       and s1, s1, t2                        # mascara com 1000...0
                       beq s1, zero, ehposprintFloat         # eh positivo s1=0
                       li s1, 1                              # numero eh negativo s1=1
                       li t0, '-'                            # define sinal '-'
 ehposprintFloat:      sb t0, 0(s0)                          # coloca sinal no buffer
-                      addi s0, s0,1                         # incrementa o endereco do buffer
+                      addi s0, s0, 1                        # incrementa o endereco do buffer
 
                       # Encontra o expoente em t0
                       fmv.x.s t0, fa0                       # recupera o numero float sem conversao
@@ -773,7 +773,7 @@ ehposprintFloat:      sb t0, 0(s0)                          # coloca sinal no bu
                       bnez t4, menor1printFloat             # se a comparacao deu true (1), pula
                       fmv.s ft2, ft6                        # ft2  fator de multiplicacao = 10
                       j cont2printFloat                     # vai para expoente positivo
-menor1printFloat:     fdiv.s ft2,ft1,ft6                    # ft2 fator multiplicativo = 0.1
+menor1printFloat:     fdiv.s ft2, ft1, ft6                  # ft2 fator multiplicativo = 0.1
 
 # calcula o expoente negativo de 10
 cont1printFloat:      fmv.s ft4, ft0                        # inicia com o numero x
@@ -832,7 +832,7 @@ loopfracprintFloat:   beq t1, zero, fimfracprintFloat       # fim dos digitos?
                       j loopfracprintFloat                  # volta ao loop
 
 # imprime 'E'
-fimfracprintFloat:    li t0,'E'                             # carrega 'E'
+fimfracprintFloat:    li t0, 'E'                            # carrega 'E'
                       sb t0, 0(s0)                          # coloca no buffer
                       addi s0, s0, 1                        # incrementa endereco
 
@@ -935,9 +935,9 @@ leUltimoreadFloat:    lb t1, 0(s0)                          # le ultimo caracter
 
 insere0PreadFloat:    addi s0, s0, 1                        # desloca o ultimo endereco para o proximo
                       addi s1, s1, 1                        # incrementa o num. caracteres
-                      li t1,'0'                             # ascii '0'
-                      sb t1,0(s0)                           # escreve '0' no ultimo
-                      sb zero,1(s0)                         # \null do final de string
+                      li t1, '0'                            # ascii '0'
+                      sb t1, 0(s0)                          # escreve '0' no ultimo
+                      sb zero, 1(s0)                        # \null do final de string
 
 inicioreadFloat:      fcvt.s.w fa0, zero                    # fa0 Resultado inicialmente zero
                       li t0, 10                             # inteiro 10
@@ -985,11 +985,11 @@ loopintreadFloat:     blt t0, t5, fimintreadFloat           # sai se o endereco 
                       addi t1, t1, -48                      # converte ascii para decimal
                       fcvt.s.w ft2, t1                      # digito lido em float
 
-                      fmul.s ft2,ft2,ft3                    # multiplica por un/dezena/centena
-                      fadd.s fa0,fa0,ft2                    # soma no resultado
-                      fmul.s ft3,ft3,ft6                    # proxima dezena/centena
+                      fmul.s ft2, ft2, ft3                  # multiplica por un/dezena/centena
+                      fadd.s fa0, fa0, ft2                  # soma no resultado
+                      fmul.s ft3, ft3, ft6                  # proxima dezena/centena
 
-                      addi t0,t0,-1                         # endereco anterior
+                      addi t0, t0, -1                       # endereco anterior
                       j loopintreadFloat                    # volta ao loop
 fimintreadFloat:
 
@@ -1081,7 +1081,7 @@ fimreadFloat:         lw ra, 0(sp)                          # recupera ra
 # --------------------------------------------------------- #
 
 time:                 DE1(timeDE2)
-                      li a7,30                              # Chama o ecall do Rars
+                      li a7, 30                             # Chama o ecall do Rars
                       ecall
                       j fimTime                             # saida
 
@@ -1115,7 +1115,7 @@ fimSleep:             ret                                   # retorna
 # --------------------------------------------------------- #
 
 random:               DE1(randomDE2)
-                      li a7,41                              # Chama o ecall do Rars
+                      li a7, 41                             # Chama o ecall do Rars
                       ecall
                       j fimRandom                           # saida
 
@@ -1156,7 +1156,7 @@ fimCLS:               ret
 
 # Draw Line ----------------------------------------------- #
 #                                                           #
-# Desenha uma linha do ponto (a0,a1) ao ponto (a2,a3) com   #
+# Desenha uma linha do ponto (a0, a1) ao ponto (a2, a3) com #
 # a cor a4 na Frame a5 (0 ou 1)                             #
 # --------------------------------------------------------- #
 
