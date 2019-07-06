@@ -17,6 +17,9 @@
                       .eqv KEY_UP    0x077                  # W ->
                       .eqv KEY_DOWN  0x073                  # S ->
 
+                      # Game Constants -------------------- #
+                      .eqv STEP      4
+
                       .data
 
                       .include "img/fundo1_320x240.s"
@@ -27,7 +30,7 @@
 
 main:                 li s0, 0                              # Current frame
                       li s1, 0                              # Mario 'x' position
-                      li s2, 217                            # Mario 'y' position
+                      li s2, 216                            # Mario 'y' position
 
 main_loop:            call paint_scene                      # Paint the whole scene on the screen
                       call handle_input                     # Found a key! Let's do something with it
@@ -76,16 +79,16 @@ _handle_input_end:    lw ra, 0(sp)
                       addi sp, sp, 4
                       ret
 
-_handle_key_left:     addi s1, s1, -12
+_handle_key_left:     addi s1, s1, -STEP
                       j _handle_input_end
 
-_handle_key_right:    addi s1, s1, 12
+_handle_key_right:    addi s1, s1, STEP
                       j _handle_input_end
 
-_handle_key_up:       addi s2, s2, -12
+_handle_key_up:       addi s2, s2, -STEP
                       j _handle_input_end
 
-_handle_key_down:     addi s2, s2, 12
+_handle_key_down:     addi s2, s2, STEP
                       j _handle_input_end
 
 # End handle_input ---------------------------------------- #
