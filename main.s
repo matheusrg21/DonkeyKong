@@ -21,20 +21,41 @@
                       .eqv STEP      4                      # How many pixels Mario moves at each step
                       .eqv START_X   0                      # Mario 'x' start position
                       .eqv START_Y   216                    # Mario 'x' start position
+                      .eqv START_ST  0                      # Mario start state
                       .eqv MAX_X     304                    # Screen limit on the 'x' direction
                       .eqv MAX_Y     224                    # Screen limit on the 'y' direction
 
                       .data
 
                       .include "img/level_1_bg.asm"
-                      .include "img/jump_man_parado_direita_16x16.s"
+                      .include "img/mario_still_right.asm"
+                      .include "img/mario_still_left.asm"
+                      .include "img/mario_walk_right_1.asm"
+                      .include "img/mario_walk_left_1.asm"
+                      .include "img/mario_walk_right_2.asm"
+                      .include "img/mario_walk_left_2.asm"
 
                       .text
                       M_SetEcall(exceptionHandling)
 
+                      # Global Values --------------------- #
+                      # s0 - In which frame are we drawing?
+                      # s1 - Mario current 'x' position.
+                      # s2 - Mario current 'y' position.
+                      # s3 - Current mario state.
+                      #    - 0: Right, Still
+                      #    - 4: Right, Still
+                      #    - 16: Left, Still
+                      #    - 20: Left, Still
+                      #    - 8: Right, Walking 1
+                      #    - 12: Right, Walking 2
+                      #    - 24: Left, Walking 1
+                      #    - 28: Left, Walking 2
+
 main:                 li s0, 0                              # Current frame
                       li s1, START_X                        # Mario 'x' position
                       li s2, START_Y                        # Mario 'y' position
+                      li s3, START_ST                       # Mario current state
 
 main_loop:            call paint_scene                      # Paint the whole scene on the screen
                       call handle_input                     # Found a key! Let's do something with it
@@ -50,11 +71,7 @@ paint_scene:          addi sp, sp, -4
                       mv a3, s0                             # Select which frame to paint into
                       call paint
 
-                      la a0, jmpd                           # Load mario image addr
-                      mv a1, s1                             # Set 'x' position to start painting
-                      mv a2, s2                             # Set 'y' position to start painting
-                      mv a3, s0                             # Select which frame to paint into
-                      call paint
+                      call paint_mario
 
                       li t0, FRAME_SEL                      # Load frame select MMIO addr
                       sw s0, 0(t0)                          # Show the current frame
@@ -65,6 +82,30 @@ paint_scene:          addi sp, sp, -4
                       ret
 
 # End paint_scene ----------------------------------------- #
+
+# Fn paint_mario() ---------------------------------------- #
+                      .data
+_images:              .word mario_still_right
+                      .word mario_still_right
+                      .word mario_walk_right_1
+                      .word mario_walk_right_2
+                      .word mario_still_left
+                      .word mario_still_left
+                      .word mario_walk_left_1
+                      .word mario_walk_left_2
+
+                      .text
+paint_mario:          andi t1, s3, 0x1C
+                      la t0, _images
+                      add t0, t0, t1
+
+                      lw a0, 0(t0)
+                      mv a1, s1                             # Set 'x' position to start painting
+                      mv a2, s2                             # Set 'y' position to start painting
+                      mv a3, s0                             # Select which frame to paint into
+                      j paint                               # TCO
+
+# End paint_mario ----------------------------------------- #
 
 # Fn handle_input() --------------------------------------- #
 handle_input:         addi sp, sp, -4
@@ -84,9 +125,11 @@ _handle_input_end:    lw ra, 0(sp)
                       ret
 
 _handle_key_left:     DECREMENT s1, STEP
+                      li s3, 24
                       j _handle_input_end
 
 _handle_key_right:    INCREMENT s1, STEP, MAX_X
+                      li s3, 8
                       j _handle_input_end
 
 _handle_key_up:       DECREMENT s2, STEP
