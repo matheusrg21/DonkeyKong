@@ -1,90 +1,101 @@
-# Macro POSITION(reg, reg, reg) ----------------------------
+# Macro POSITION(out: reg, x: reg, y: reg) -----------------
+# From the (x, y) coordinates of a pixel on the screen,
+# produces the apropriate offset that can be added to the
+# appropriate frame base address to get the exact address
+# of that pixel.
 #
-# Produces the apropriate offset for painting at the input
-# 'x' and 'y' position
-.macro POSITION(%out, %x, %y)
+                      .macro POSITION(%out, %x, %y)
                       li %out, DISPLAY_W                    # Load display width
                       mul %out, %y, %out                    # Multiply that by the 'y' position
                       add %out, %x, %out                    # Get the final offset
-.end_macro
+                      .end_macro
 
-# Macro DISPLAY(reg, reg, reg) -----------------------------
+# Macro DISPLAY(out: reg, offset: reg, frame: reg) ---------
+# Produces the address of a pixel on the screen at the
+# provided frame and offset.
 #
-# Produces the full addr for the display at the provided
-# frame and offset
-.macro DISPLAY(%out, %offset, %frame)
+                      .macro DISPLAY(%out, %offset, %frame)
                       mv tp, %offset
                       beqz %frame, frame_0
                       li %out, DISPLAY_1
                       j end
-frame_0:              li %out, DISPLAY_0
-end:                  add %out, %out, tp
-.end_macro
+  frame_0:            li %out, DISPLAY_0
+  end:                add %out, %out, tp
+                      .end_macro
 
-# Macro CASE(reg, value, label) ----------------------------
+# Macro CASE(test: reg, value: imm, to: label) -------------
+# Helper macro for checking if the value in reg is equal to
+# a immediate value.
 #
-# If the value in reg is equal to value, then jump to label
-.macro CASE(%reg, %value, %label)
-                      li t0, %value
-                      beq t0, %reg, %label
-.end_macro
+                      .macro CASE(%test, %value, %to)
+                      li tp, %value
+                      beq tp, %test, %to
+                      .end_macro
 
-# Macro INCREMENT(reg, value, value, value) ----------------
+# Macro INCREMENT(r: reg, amt: imm, max: imm) --------------
+# Increments the value in reg by amt but does not let it go
+# above the max value.
 #
-# Increments the value in reg by amt but not if it becomes
-# bigger than max or lower than min.
-.macro INCREMENT(%reg, %amt, %max)
-                      addi %reg, %reg, %amt
+                      .macro INCREMENT(%r, %amt, %max)
+                      addi %r, %r, %amt
                       li tp, %max
-                      ble %reg, tp, _end
-                      mv %reg, tp
-_end:
-.end_macro
+                      ble %r, tp,  end
+                      mv %r, tp
+ end:
+                      .end_macro
 
-# Macro DECREMENT(reg, value, value, value) ----------------
+# Macro DECREMENT(r: reg, amt: imm) ------------------------
+# Decrements the value in reg by amt but does not let it
+# become negative.
 #
-# Decrements the value in reg by amt but not if it becomes
-# bigger than max or lower than min.
-.macro DECREMENT(%reg, %amt)
-                      addi %reg, %reg, -%amt
-                      bgez %reg, _end
-                      mv %reg, zero
-_end:
-.end_macro
+                      .macro DECREMENT(%r, %amt)
+                      addi %r, %r, -%amt
+                      bgez %r,  end
+                      mv %r, zero
+  end:
+                      .end_macro
 
-# Macro PANIC(string) --------------------------------------
-#
+# Macro PANIC(msg: string) ---------------------------------
 # Is it time to panic? Are there any other way?
-.macro PANIC(%msg)
+#
+                      .macro PANIC(%msg)
                       .data
-
-msg:                  .string %msg
+  message:            .string %msg
 
                       .text
-
-                      la a0, msg
+                      la a0, message
                       j panic
-.end_macro
+                      .end_macro
 
-# Macro DE1(label) -----------------------------------------
+# Macro DE1(to: label) -------------------------------------
+# Jump to label if running on the DE1-SoC
 #
-# Verifica se eh a DE1-SoC
-.macro DE1(%salto)
+                      .macro DE1(%to)
                       li tp, 0x10008000                     # carrega tp = 0x10008000
-                      bne gp, tp, %salto                    # Na DE1 gp = 0 ! Não tem segmento .extern
-.end_macro
+                      bne gp, tp, %to                       # Na DE1 gp = 0 ! Não tem segmento .extern
+                      .end_macro
 
-# Macro M_SetEcall(label) ----------------------------------
+# Macro NOT_DE1(to: label) ---------------------------------
+# Jump to label if not running on the DE1-SoC
 #
-# Seta o endereco UTVEC
-.macro M_SetEcall(%label)
-                      la t6, %label                         # carrega em t6 o endereço base das rotinas do sistema ECALL
-                      csrrw zero, 5, t6                     # seta utvec (reg 5) para o endereço t6
+                      .macro NOT_DE1(%to)
+                      li tp, 0x10008000                     # carrega tp = 0x10008000
+                      beq gp, tp, %to                       # Na DE1 gp = 0 ! Não tem segmento .extern
+                      .end_macro
+
+# Macro M_SetEcall(eh: label) ------------------------------
+# Set label as the exception handler and enable interrupt
+#
+                      .macro M_SetEcall(%eh)
+                      la tp, %eh                            # carrega em t6 o endereço base das rotinas do sistema ECALL
+                      csrrw zero, 5, tp                     # seta utvec (reg 5) para o endereço t6
                       csrrsi zero, 0, 1                     # seta o bit de habilitação de interrupção em ustatus (reg 0)
-.end_macro
+                      .end_macro
 
 # Macro SAVE_REGS ------------------------------------------
-.macro PUSH_REGS
+# Save all registers on the stack.
+#
+                      .macro PUSH_REGS
                       addi sp, sp, -264                     # Salva todos os registradores na pilha
                       sw  x1,   0(sp)
                       sw  x2,   4(sp)
@@ -150,10 +161,15 @@ msg:                  .string %msg
                       fsw f29, 240(sp)
                       fsw f30, 244(sp)
                       fsw f31, 248(sp)
-.end_macro
+                      .end_macro
 
 # Macro POP_REGS -------------------------------------------
-.macro POP_REGS
+# Restore all registers that were previously saved on the
+# stack.
+# Note: registers a0 and fa0 are not restored because they
+# are used to return values.
+#
+                      .macro POP_REGS
                       lw  x1,   0(sp)                       # recupera QUASE todos os registradores na pilha
                       lw  x2,   4(sp)
                       lw  x3,   8(sp)
@@ -219,7 +235,10 @@ msg:                  .string %msg
                       flw f30, 244(sp)
                       flw f31, 248(sp)
                       addi sp, sp, 264
-.end_macro
+                      .end_macro
+
+# Constants ------------------------------------------------
+#
 
                       # definicao do mapa de enderecamento de MMIO
                       .eqv VGAADDRESSINI0 0xFF000000
