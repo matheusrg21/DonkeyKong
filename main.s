@@ -69,7 +69,7 @@ paint_scene:          addi sp, sp, -4
                       li a1, 0                              # Set 'x' position to start painting
                       li a2, 0                              # Set 'y' position to start painting
                       mv a3, s0                             # Select which frame to paint into
-                      call paint
+                      call paint_fast
 
                       call paint_mario
 
@@ -155,7 +155,22 @@ _key_found:           lw a0, 4(t1)                          # le o valor da tecl
 # End find_key -------------------------------------------- #
 
 # Fn paint(img: u32, x: u32, y: u32, fr: u32) ------------- #
-paint:                lw t1, 0(a0)                          # Load image width
+#
+# Paints the referenced image at the provided position and
+# frame. Depending on detected support this function will
+# forward to paint_fast or paint_slow to do the work.
+paint:                NOT_DE1 paint_slow                    # On the DE1, paint_fast seems to handle transparent pixels correctly
+                      # Falls through and runs paint_fast
+# End paint ----------------------------------------------- #
+
+# Fn paint_fast(img: u32, x: u32, y: u32, fr: u32) -------- #
+#
+# Paints the referenced image at the provided position and
+# frame. This function takes the fast approach of painting
+# the image word by word, but it doesn't handle transparent
+# pixels on rars as requires that the image width be a
+# multiple of 4.
+paint_fast:           lw t1, 0(a0)                          # Load image width
                       lw t2, 4(a0)                          # Load image height
                       addi a0, a0, 8                        # Get pointer to the image
                       POSITION t0, a1, a2                   # Start offset on the display
@@ -163,22 +178,57 @@ paint:                lw t1, 0(a0)                          # Load image width
 
                       mv t3, t1                             # Backup image width
 
-_paint_loop:          lw t5, 0(a0)                          # Load pixel from image
+_paint_fast_loop:     lw t5, 0(a0)                          # Load pixel from image
                       addi a0, a0, 4                        # Update image pointer
                       sw t5, 0(t0)                          # Paint loaded pixel on the display
                       addi t0, t0, 4                        # Update display pointer
 
                       addi t1, t1, -4                       # One less pixel to paint
-                      bnez t1 _paint_loop                   # Are we done with this line?
+                      bnez t1 _paint_fast_loop              # Are we done with this line?
 
                       addi t2, t2, -1                       # One less line to paint
                       mv t1, t3                             # Let's start the next one
                       addi t0, t0, DISPLAY_W                # Move display pointer to the next line
                       sub t0, t0, t3                        # But we needed it to point to the START of the next line!
 
-                      bnez t2, _paint_loop                  # Are we done with this image?
+                      bnez t2, _paint_fast_loop             # Are we done with this image?
                       ret                                   # Yes we are!
 
-# End paint ----------------------------------------------- #
+# End paint_fast ------------------------------------------ #
+
+
+# Fn paint_slow(img: u32, x: u32, y: u32, fr: u32) -------- #
+#
+# Paints the referenced image at the provided position and
+# frame. This function takes the slow approach of painting
+# the image pixel by pixel and correctly handle transparent
+# pixels.
+paint_slow:           lw t1, 0(a0)                          # Load image width
+                      lw t2, 4(a0)                          # Load image height
+                      li t4, 0xC7
+                      addi a0, a0, 8                        # Get pointer to the image
+                      POSITION t0, a1, a2                   # Start offset on the display
+                      DISPLAY t0, t0, a3                    # Get pointer to the display
+
+                      mv t3, t1                             # Backup image width
+
+_paint_slow_loop:     lbu t5, 0(a0)                          # Load pixel from image
+                      beq t5, t4, _paint_slow_skip
+                      sb t5, 0(t0)                          # Paint loaded pixel on the display
+
+_paint_slow_skip:     addi a0, a0, 1                        # Update image pointer
+                      addi t0, t0, 1                        # Update display pointer
+                      addi t1, t1, -1                       # One less pixel to paint
+                      bnez t1 _paint_slow_loop              # Are we done with this line?
+
+                      addi t2, t2, -1                       # One less line to paint
+                      mv t1, t3                             # Let's start the next one
+                      addi t0, t0, DISPLAY_W                # Move display pointer to the next line
+                      sub t0, t0, t3                        # But we needed it to point to the START of the next line!
+
+                      bnez t2, _paint_slow_loop             # Are we done with this image?
+                      ret                                   # Yes we are!
+
+# End paint_slow ------------------------------------------ #
 
                       .include "./SYSTEMv14.s"
