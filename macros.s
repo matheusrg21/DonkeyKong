@@ -29,6 +29,29 @@ end:                  add %out, %out, tp
                       beq t0, %reg, %label
 .end_macro
 
+# Macro INCREMENT(reg, value, value, value) ----------------
+#
+# Increments the value in reg by amt but not if it becomes
+# bigger than max or lower than min.
+.macro INCREMENT(%reg, %amt, %max)
+                      addi %reg, %reg, %amt
+                      li tp, %max
+                      ble %reg, tp, _end
+                      mv %reg, tp
+_end:
+.end_macro
+
+# Macro DECREMENT(reg, value, value, value) ----------------
+#
+# Decrements the value in reg by amt but not if it becomes
+# bigger than max or lower than min.
+.macro DECREMENT(%reg, %amt)
+                      addi %reg, %reg, -%amt
+                      bgez %reg, _end
+                      mv %reg, zero
+_end:
+.end_macro
+
 # Macro PANIC(string) --------------------------------------
 #
 # Is it time to panic? Are there any other way?

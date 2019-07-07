@@ -18,7 +18,11 @@
                       .eqv KEY_DOWN  0x073                  # S ->
 
                       # Game Constants -------------------- #
-                      .eqv STEP      4
+                      .eqv STEP      4                      # How many pixels Mario moves at each step
+                      .eqv START_X   0                      # Mario 'x' start position
+                      .eqv START_Y   216                    # Mario 'x' start position
+                      .eqv MAX_X     304                    # Screen limit on the 'x' direction
+                      .eqv MAX_Y     224                    # Screen limit on the 'y' direction
 
                       .data
 
@@ -29,8 +33,8 @@
                       M_SetEcall(exceptionHandling)
 
 main:                 li s0, 0                              # Current frame
-                      li s1, 0                              # Mario 'x' position
-                      li s2, 216                            # Mario 'y' position
+                      li s1, START_X                        # Mario 'x' position
+                      li s2, START_Y                        # Mario 'y' position
 
 main_loop:            call paint_scene                      # Paint the whole scene on the screen
                       call handle_input                     # Found a key! Let's do something with it
@@ -79,16 +83,16 @@ _handle_input_end:    lw ra, 0(sp)
                       addi sp, sp, 4
                       ret
 
-_handle_key_left:     addi s1, s1, -STEP
+_handle_key_left:     DECREMENT s1, STEP
                       j _handle_input_end
 
-_handle_key_right:    addi s1, s1, STEP
+_handle_key_right:    INCREMENT s1, STEP, MAX_X
                       j _handle_input_end
 
-_handle_key_up:       addi s2, s2, -STEP
+_handle_key_up:       DECREMENT s2, STEP
                       j _handle_input_end
 
-_handle_key_down:     addi s2, s2, STEP
+_handle_key_down:     INCREMENT s2, STEP, MAX_Y
                       j _handle_input_end
 
 # End handle_input ---------------------------------------- #
