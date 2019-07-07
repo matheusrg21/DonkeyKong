@@ -26,7 +26,7 @@
 
                       .data
 
-                      .include "img/fundo1_320x240.s"
+                      .include "img/level_1_bg.asm"
                       .include "img/jump_man_parado_direita_16x16.s"
 
                       .text
