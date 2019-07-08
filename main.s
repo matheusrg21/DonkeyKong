@@ -25,6 +25,12 @@
                       .eqv MAX_X     304                    # Screen limit on the 'x' direction
                       .eqv MAX_Y     224                    # Screen limit on the 'y' direction
 
+                      # State masks ------------------------
+                      .eqv STATE     0x1C
+                      .eqv DIRECTION 0x10
+                      .eqv WALKING   0x08
+                      .eqv SPRITE    0x04
+
                       .data
 
                       .include "img/level_1_bg.asm"
@@ -87,12 +93,12 @@ paint_scene:          addi sp, sp, -4
 # End paint_scene ------------------------------------------
 
 # Fn update_state() ----------------------------------------
-update_state:         andi t0, s3, 0x8                      # Get walk bit value
+update_state:         andi t0, s3, WALKING                  # Get walk bit value
                       bnez t0, _update_state_walk           # Is mario walking?
 
                       ret                                   # No.
 
-_update_state_walk:   andi t0, s3, 0x04                     # Yes.
+_update_state_walk:   andi t0, s3, SPRITE                   # Yes.
                       bnez t0, _update_state_walk_2         # But in which state?
 
 _update_state_walk_1: addi s3, s3, 4                        # Update to walk 2 state
@@ -115,7 +121,7 @@ _images:              .word mario_still_right
                       .word mario_walk_left_2
 
                       .text
-paint_mario:          andi t1, s3, 0x1C
+paint_mario:          andi t1, s3, STATE
                       la t0, _images
                       add t0, t0, t1
 
