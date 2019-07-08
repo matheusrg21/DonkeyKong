@@ -2,14 +2,14 @@
 
                       .include "./macros.s"
 
-                      # Display --------------------------- #
+                      # Display ----------------------------
                       .eqv DISPLAY_0 0xFF000000
                       .eqv DISPLAY_1 0xFF100000
                       .eqv FRAME_SEL 0xFF200604
                       .eqv DISPLAY_W 320
                       .eqv DISPLAY_H 240
 
-                      # Keyboard  ------------------------- #
+                      # Keyboard  --------------------------
                       .eqv KEYBOARD  0xFF200000             # Keyboard MMIO address
                       .eqv KEY_MASK  0x020                  # Used to turn upper case into lower case
                       .eqv KEY_LEFT  0x061                  # A -> Left walk
@@ -17,7 +17,7 @@
                       .eqv KEY_UP    0x077                  # W ->
                       .eqv KEY_DOWN  0x073                  # S ->
 
-                      # Game Constants -------------------- #
+                      # Game Constants ---------------------
                       .eqv STEP      4                      # How many pixels Mario moves at each step
                       .eqv START_X   0                      # Mario 'x' start position
                       .eqv START_Y   216                    # Mario 'x' start position
@@ -38,7 +38,7 @@
                       .text
                       M_SetEcall(exceptionHandling)
 
-                      # Global Values --------------------- #
+                      # Global Values ----------------------
                       # s0 - In which frame are we drawing?
                       # s1 - Mario current 'x' position.
                       # s2 - Mario current 'y' position.
@@ -52,6 +52,7 @@
                       #    - 24: Left, Walking 1
                       #    - 28: Left, Walking 2
 
+# Fn main() -> ! -------------------------------------------
 main:                 li s0, 0                              # Current frame
                       li s1, START_X                        # Mario 'x' position
                       li s2, START_Y                        # Mario 'y' position
@@ -60,8 +61,9 @@ main:                 li s0, 0                              # Current frame
 main_loop:            call paint_scene                      # Paint the whole scene on the screen
                       call handle_input                     # Found a key! Let's do something with it
                       j main_loop                           # Continue the game loop
+# End main -------------------------------------------------
 
-# Fn paint_scene() ---------------------------------------- #
+# Fn paint_scene() -----------------------------------------
 paint_scene:          addi sp, sp, -4
                       sw ra, 0(sp)
 
@@ -81,9 +83,9 @@ paint_scene:          addi sp, sp, -4
                       addi sp, sp ,4
                       ret
 
-# End paint_scene ----------------------------------------- #
+# End paint_scene ------------------------------------------
 
-# Fn paint_mario() ---------------------------------------- #
+# Fn paint_mario() -----------------------------------------
                       .data
 _images:              .word mario_still_right
                       .word mario_still_right
@@ -105,9 +107,9 @@ paint_mario:          andi t1, s3, 0x1C
                       mv a3, s0                             # Select which frame to paint into
                       j paint                               # TCO
 
-# End paint_mario ----------------------------------------- #
+# End paint_mario ------------------------------------------
 
-# Fn handle_input() --------------------------------------- #
+# Fn handle_input() ----------------------------------------
 handle_input:         addi sp, sp, -4
                       sw ra, 0(sp)
 
@@ -138,11 +140,11 @@ _handle_key_up:       DECREMENT s2, STEP
 _handle_key_down:     INCREMENT s2, STEP, MAX_Y
                       j _handle_input_end
 
-# End handle_input ---------------------------------------- #
+# End handle_input -----------------------------------------
 
-# Fn find_key() -> u8? ------------------------------------ #
-#                                                           #
-# Read a 'fresh' key from the keyboard                      #
+# Fn find_key() -> u8? -------------------------------------
+#
+# Read a 'fresh' key from the keyboard
 key:                  li t1, KEYBOARD                       # carrega o endereço de controle do KDMMIO
                       lw t0, 0(t1)                          # Le bit de Controle Teclado
                       bne t0, zero, _key_found              # Se não há tecla pressionada então vai para FIM
@@ -152,18 +154,18 @@ key:                  li t1, KEYBOARD                       # carrega o endereç
 _key_found:           lw a0, 4(t1)                          # le o valor da tecla tecla
                       ori a0, a0, KEY_MASK
                       ret
-# End find_key -------------------------------------------- #
+# End find_key ---------------------------------------------
 
-# Fn paint(img: u32, x: u32, y: u32, fr: u32) ------------- #
+# Fn paint(img: u32, x: u32, y: u32, fr: u32) --------------
 #
 # Paints the referenced image at the provided position and
 # frame. Depending on detected support this function will
 # forward to paint_fast or paint_slow to do the work.
 paint:                NOT_DE1 paint_slow                    # On the DE1, paint_fast seems to handle transparent pixels correctly
                       # Falls through and runs paint_fast
-# End paint ----------------------------------------------- #
+# End paint ------------------------------------------------
 
-# Fn paint_fast(img: u32, x: u32, y: u32, fr: u32) -------- #
+# Fn paint_fast(img: u32, x: u32, y: u32, fr: u32) ---------
 #
 # Paints the referenced image at the provided position and
 # frame. This function takes the fast approach of painting
@@ -194,10 +196,10 @@ _paint_fast_loop:     lw t5, 0(a0)                          # Load pixel from im
                       bnez t2, _paint_fast_loop             # Are we done with this image?
                       ret                                   # Yes we are!
 
-# End paint_fast ------------------------------------------ #
+# End paint_fast -------------------------------------------
 
 
-# Fn paint_slow(img: u32, x: u32, y: u32, fr: u32) -------- #
+# Fn paint_slow(img: u32, x: u32, y: u32, fr: u32) ---------
 #
 # Paints the referenced image at the provided position and
 # frame. This function takes the slow approach of painting
@@ -212,7 +214,7 @@ paint_slow:           lw t1, 0(a0)                          # Load image width
 
                       mv t3, t1                             # Backup image width
 
-_paint_slow_loop:     lbu t5, 0(a0)                          # Load pixel from image
+_paint_slow_loop:     lbu t5, 0(a0)                         # Load pixel from image
                       beq t5, t4, _paint_slow_skip
                       sb t5, 0(t0)                          # Paint loaded pixel on the display
 
@@ -229,6 +231,6 @@ _paint_slow_skip:     addi a0, a0, 1                        # Update image point
                       bnez t2, _paint_slow_loop             # Are we done with this image?
                       ret                                   # Yes we are!
 
-# End paint_slow ------------------------------------------ #
+# End paint_slow -------------------------------------------
 
                       .include "./SYSTEMv14.s"
