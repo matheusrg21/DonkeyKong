@@ -1,5 +1,5 @@
 #########################################################################
-# Rotina de tratamento de excecao e interrupcao    v1.3                 #
+# Rotina de tratamento de excecao e interrupcao    v1.4                 #
 # Lembre-se: Os ecalls originais do Rars possuem precedencia sobre      #
 #        estes definidos aqui                                           #
 # Os ecalls 1XX usam o BitMap Display e Keyboard Display MMIO Tools     #
