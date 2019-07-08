@@ -42,7 +42,7 @@
                       # s0 - In which frame are we drawing?
                       # s1 - Mario current 'x' position.
                       # s2 - Mario current 'y' position.
-                      # s3 - Current mario state.
+                      # s3 - Current mario state. (WS)(LR)(12)
                       #    - 0: Right, Still
                       #    - 4: Right, Still
                       #    - 16: Left, Still
@@ -58,9 +58,10 @@ main:                 li s0, 0                              # Current frame
                       li s2, START_Y                        # Mario 'y' position
                       li s3, START_ST                       # Mario current state
 
-main_loop:            call paint_scene                      # Paint the whole scene on the screen
-                      call handle_input                     # Found a key! Let's do something with it
-                      j main_loop                           # Continue the game loop
+_loop:                call paint_scene                      # Paint the whole scene on the screen
+                      call update_state                     # Update walking animation
+                      call handle_input                     # Handle keyboard input
+                      j _loop                               # Continue the game loop
 # End main -------------------------------------------------
 
 # Fn paint_scene() -----------------------------------------
@@ -84,6 +85,23 @@ paint_scene:          addi sp, sp, -4
                       ret
 
 # End paint_scene ------------------------------------------
+
+# Fn update_state() ----------------------------------------
+update_state:         andi t0, s3, 0x8                      # Get walk bit value
+                      bnez t0, _update_state_walk           # Is mario walking?
+
+                      ret                                   # No.
+
+_update_state_walk:   andi t0, s3, 0x04                     # Yes.
+                      bnez t0, _update_state_walk_2         # But in which state?
+
+_update_state_walk_1: addi s3, s3, 4                        # Update to walk 2 state
+                      ret
+
+_update_state_walk_2: andi s3, s3, -9                       # Update to still state
+                      ret
+
+# End update_state -----------------------------------------
 
 # Fn paint_mario() -----------------------------------------
                       .data
