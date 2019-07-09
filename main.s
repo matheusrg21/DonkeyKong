@@ -80,6 +80,7 @@ paint_scene:          addi sp, sp, -4
                       mv a3, s0                             # Select which frame to paint into
                       call paint_fast
 
+                      call update_position
                       call paint_mario
 
                       li t0, FRAME_SEL                      # Load frame select MMIO addr
@@ -91,6 +92,33 @@ paint_scene:          addi sp, sp, -4
                       ret
 
 # End paint_scene ------------------------------------------
+
+# Fn update_position() -------------------------------------
+update_position:      addi t2, s2, 15                       # Get the last line of mario's sprite
+                      andi t0, s3, DIRECTION                # Get walking direction
+                      mv t1, s1                             # Get first pixel of the line
+                      bnez t0, _left                        # If walking direction is left, we're done here
+                      addi t1, s1, 15                       # If walking direction is right, get the last pixel of the line
+
+_left:                POSITION t0, t1, t2                   # Start offset on the display
+                      DISPLAY t0, t0, s0                    # Get pointer to the display
+                      addi t1, t0, 320                      # Get address one line
+
+                      lbu t0, 0(t0)                         # Load pixel above floor
+                      lbu t1, 0(t1)                         # Load pixel on the floor
+
+                      li t3, 6                              # Get red color
+                      beq t0, t3, _too_low                  # If pixel above the floor is red, we're on the floor
+                      beqz t1, _too_high                    # If pixel on the floor is black, we're above the floor
+                      ret                                   # Else we're ok
+
+_too_high:            INCREMENT s2, 1, MAX_Y                # Move mario 1px down.
+                      ret
+
+_too_low:             DECREMENT s2, 1                       # Move mario 1px up.
+                      ret
+
+# End update_position --------------------------------------
 
 # Fn update_state() ----------------------------------------
 update_state:         andi t0, s3, WALKING                  # Get walk bit value
