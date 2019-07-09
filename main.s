@@ -9,6 +9,16 @@
                       .eqv DISPLAY_W 320
                       .eqv DISPLAY_H 240
 
+                      # Analog-Digital Converter -----------
+                      .eqv ADC_CH0   0xFF200200
+                      .eqv ADC_CH1   0xFF200204
+                      .eqv ADC_CH2   0xFF200208
+                      .eqv ADC_CH3   0xFF20020C
+                      .eqv ADC_CH4   0xFF200210
+                      .eqv ADC_CH5   0xFF200214
+                      .eqv ADC_CH6   0xFF200218
+                      .eqv ADC_CH7   0xFF20021C
+
                       # Keyboard  --------------------------
                       .eqv KEYBOARD  0xFF200000             # Keyboard MMIO address
                       .eqv KEY_MASK  0x020                  # Used to turn upper case into lower case
