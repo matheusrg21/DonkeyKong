@@ -40,6 +40,7 @@
                       .eqv DIRECTION 0x10
                       .eqv WALKING   0x08
                       .eqv SPRITE    0x04
+                      .eqv JS_MASK   0xFFFFFFC0
 
                       .data
 
@@ -79,14 +80,12 @@ main:                 li s0, 0                              # Current frame
                       # X axis calibration
                       li t0, ADC_CH1                        # Load X axis addr
                       lw s4, 0(t0)                          # Set current value for X as its zero
-                      srli s4, s4, 4
-                      slli s4, s4, 4
+                      andi s4, s4, JS_MASK                  # Reduce noise
 
                       # Y axis calibration
                       li t0, ADC_CH2                        # Load X axis addr
                       lw s5, 0(t0)                          # Set current value for Y as its zero
-                      srli s5, s5, 4
-                      slli s5, s5, 4
+                      andi s5, s5, JS_MASK                  # Reduce noise
 
 _loop:                call paint_scene                      # Paint the whole scene on the screen
                       call update_state                     # Update walking animation
@@ -228,12 +227,10 @@ handle_js_input:      addi sp, sp, -4                       # Reserve stack spac
                       bnez a1, move_y                       # Handle changes on y derection
 
 move_x:               blt a0, s4, _handle_key_left          # Move left
-                      bge a0, s4, _handle_key_right         # Move Right
-                      PANIC "reached unreachable code!"
+                      j _handle_key_right                   # Move Right
 
 move_y:               blt a0, s5, _handle_key_up            # Move up
-                      bge a0, s5, _handle_key_down          # Move down
-                      PANIC "reached unreachable code!"
+                      j _handle_key_down                    # Move down
 
 # End handle_js_input --------------------------------------
 
@@ -259,13 +256,11 @@ _key_found:           lw a0, 4(t1)                          # le o valor da tecl
 #   - a1: direction of the change. 0 -> X; 1 -> Y.
 joystick:             li t0, ADC_CH1                        # Read value on X direction
                       lw t1, 0(t0)
-                      srli t1, t1, 4
-                      slli t1, t1, 4
+                      andi t1, t1, JS_MASK                  # Reduce noise
 
                       li t0, ADC_CH2                        # Read value on Y direction
                       lw t2, 0(t0)
-                      srli t2, t2, 4
-                      slli t2, t2, 4
+                      andi t2, t2, JS_MASK                  # Reduce noise
 
                       # Debugging
                       mv a6, t1
