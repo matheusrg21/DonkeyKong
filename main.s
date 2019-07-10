@@ -67,6 +67,8 @@
                       #    - 12: Right, Walking 2
                       #    - 24: Left, Walking 1
                       #    - 28: Left, Walking 2
+                      # s4 - X joystick base value
+                      # s5 - Y joystick base value
 
 # Fn main() -> ! -------------------------------------------
 main:                 li s0, 0                              # Current frame
@@ -74,8 +76,21 @@ main:                 li s0, 0                              # Current frame
                       li s2, START_Y                        # Mario 'y' position
                       li s3, START_ST                       # Mario current state
 
+                      # X axis calibration
+                      li t0, ADC_CH1                        # Load X axis addr
+                      lw s4, 0(t0)                          # Set current value for X as its zero
+                      srli s4, s4, 4
+                      slli s4, s4, 4
+
+                      # Y axis calibration
+                      li t0, ADC_CH2                        # Load X axis addr
+                      lw s5, 0(t0)                          # Set current value for Y as its zero
+                      srli s5, s5, 4
+                      slli s5, s5, 4
+
 _loop:                call paint_scene                      # Paint the whole scene on the screen
                       call update_state                     # Update walking animation
+                      call handle_js_input                  # Handle input from the joystick
                       call handle_input                     # Handle keyboard input
                       j _loop                               # Continue the game loop
 # End main -------------------------------------------------
@@ -204,6 +219,24 @@ _handle_key_down:     INCREMENT s2, STEP, MAX_Y
 
 # End handle_input -----------------------------------------
 
+# Fn handle_js_input() -------------------------------------
+handle_js_input:      addi sp, sp, -4                       # Reserve stack space
+                      sw ra, 0(sp)                          # Store return addr
+
+                      call joystick                         # Read joystick input
+                      beqz a0, _handle_input_end            # Do nothing if not changed
+                      bnez a1, move_y                       # Handle changes on y derection
+
+move_x:               blt a0, s4, _handle_key_left          # Move left
+                      bge a0, s4, _handle_key_right         # Move Right
+                      PANIC "reached unreachable code!"
+
+move_y:               blt a0, s5, _handle_key_up            # Move up
+                      bge a0, s5, _handle_key_down          # Move down
+                      PANIC "reached unreachable code!"
+
+# End handle_js_input --------------------------------------
+
 # Fn find_key() -> u8? -------------------------------------
 #
 # Read a 'fresh' key from the keyboard
@@ -217,6 +250,45 @@ _key_found:           lw a0, 4(t1)                          # le o valor da tecl
                       ori a0, a0, KEY_MASK
                       ret
 # End find_key ---------------------------------------------
+
+# Fn joistick() -> (i32?, bool) ----------------------------
+#
+# Read a 'fresh' (changed) value from the joystick. This
+# function returns two values:
+#   - a0: value of the changed input, zero if unchanged
+#   - a1: direction of the change. 0 -> X; 1 -> Y.
+joystick:             li t0, ADC_CH1                        # Read value on X direction
+                      lw t1, 0(t0)
+                      srli t1, t1, 4
+                      slli t1, t1, 4
+
+                      li t0, ADC_CH2                        # Read value on Y direction
+                      lw t2, 0(t0)
+                      srli t2, t2, 4
+                      slli t2, t2, 4
+
+                      # Debugging
+                      mv a6, t1
+                      mv a7, t2
+
+                      # Check direction on the input change
+                      bne t1, s4, _joystick_x_changed
+                      bne t2, s5, _joystick_y_changed
+
+                      # If reached here, no input has changed
+                      li a0, 0                              # Unchanged joystick input code
+                      li a1, 0                              # Unchanged joystick input code
+                      ret
+
+_joystick_x_changed:  mv a0, t1                             # Move read value to the return register
+                      li a1,  0                             # Code for change detected on the X direction
+                      ret
+
+_joystick_y_changed:  mv a0, t2                             # Move read value to the return register
+                      li a1, 1                              # Code for change detected on the Y direction
+                      ret
+
+# End joystick ---------------------------------------------
 
 # Fn paint(img: u32, x: u32, y: u32, fr: u32) --------------
 #
