@@ -178,7 +178,7 @@ paint_mario:          andi t1, s3, STATE
                       la t0, _images
                       add t0, t0, t1
 
-                      lw a0, 0(t0)
+                      lw a0, 0(t0)                          # Load addr of the image to paint
                       mv a1, s1                             # Set 'x' position to start painting
                       mv a2, s2                             # Set 'y' position to start painting
                       mv a3, s0                             # Select which frame to paint into
