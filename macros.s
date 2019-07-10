@@ -83,15 +83,6 @@
                       beq gp, tp, %to                       # Na DE1 gp = 0 ! Não tem segmento .extern
                       .end_macro
 
-# Macro M_SetEcall(eh: label) ------------------------------
-# Set label as the exception handler and enable interrupt
-#
-                      .macro M_SetEcall(%eh)
-                      la tp, %eh                            # carrega em t6 o endereço base das rotinas do sistema ECALL
-                      csrrw zero, 5, tp                     # seta utvec (reg 5) para o endereço t6
-                      csrrsi zero, 0, 1                     # seta o bit de habilitação de interrupção em ustatus (reg 0)
-                      .end_macro
-
 # Macro SAVE_REGS ------------------------------------------
 # Save all registers on the stack.
 #

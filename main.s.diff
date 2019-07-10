@@ -1,0 +1,108 @@
+diff --git a/main.s b/main.s
+index 11489b9..b553d6b 100644
+--- a/main.s
++++ b/main.s
+@@ -28,9 +28,18 @@
+ main:                 li s0, 0                              # Current frame
+                       li s1, 0                              # Mario 'x' position
+                       li s2, 217                            # Mario 'y' position
++                      li s3 ADCADDRESSCH1                   # Eixo X Joystick
++                      lw s4 0(s3)                           # Eixo X=0
++                      srli s4 s4 4
++                      slli s4 s4 4
++                      li s5 ADCADDRESSCH2                   # Eixo Y Joystick
++                      lw s6 0(s5)                           # Eixo Y=0
++                      srli s6 s6 4
++                      slli s6 s6 4
+
+ main_loop:            call paint_scene                      # Paint the whole scene on the screen
+                       call handle_input                     # Found a key! Let's do something with it
++                      call handle_input_joystick
+                       j main_loop                           # Continue the game loop
+
+ # Fn paint_scene() ---------------------------------------- #
+@@ -75,6 +84,27 @@ handle_input:         addi sp, sp, -4
+ _handle_input_end:    lw ra, 0(sp)
+                       addi sp, sp, 4
+                       ret
++
++# Fn handle_input_joystick() --------------------------------------- #
++handle_input_joystick:addi sp, sp, -4
++                      sw ra, 0(sp)
++
++                      call joystick
++                      add s7 a0 zero
++                      beqz a0, _handle_input_end            # Do nothing if key not found
++		      bnez a1 move_y
++
++                      blt a0, s4, _handle_key_left
++                      bgt a0, s4, _handle_key_right
++
++                      j _handle_input_end
++
++move_y: 	      blt a0, s6, _handle_key_up
++                      bgt a0, s6, _handle_key_down
++
++                      j _handle_input_end
++
++# End handle_input ---------------------------------------- #
+
+ _handle_key_left:     addi s1, s1, -12
+                       j _handle_input_end
+@@ -87,8 +117,7 @@ _handle_key_up:       addi s2, s2, -12
+
+ _handle_key_down:     addi s2, s2, 12
+                       j _handle_input_end
+-
+-# End handle_input ---------------------------------------- #
++
+
+ # Fn find_key() -> u8? ------------------------------------ #
+ #                                                           #
+@@ -104,6 +133,46 @@ _key_found:           lw a0, 4(t1)                          # le o valor da tecl
+                       ret
+ # End find_key -------------------------------------------- #
+
++
++# Read a 'fresh' value from the joystick                    #
++joystick:             addi sp sp -4
++		      sw ra 0(sp)
++		      lw t0, 0(s3)                          # Le bit de Controle joystick
++                      srli t0, t0, 4
++                      slli t0, t0, 4
++                      lw t1, 0(s5)
++                      srli t1, t1, 4
++                      slli t1, t1, 4
++                      add a6 zero t0
++                      add a7 zero t1
++                      jal evaluate_y
++                      jal evaluate_x
++                      li a0, 0
++                      lw ra 0(sp)
++                      addi sp sp 4
++      		      addi a1 zero 0
++                      ret
++
++evaluate_x:	      bne t0, s4, _value_x_found              # Se não há valor novo então vai para FIM
++                      ret
++
++evaluate_y:           bne t1, s6, _value_y_found              # Se não há valor novo então vai para FIM
++                      ret
++
++_value_x_found:       add a0, zero, t0                          # le o valor da
++		      addi a1 zero 0
++                      lw ra 0(sp)
++                      addi sp sp 4
++                      ret
++
++_value_y_found:       add a0, zero, t1                          # le o valor da
++      		      addi a1 zero 1
++                      lw ra 0(sp)
++                      addi sp sp 4
++                      ret
++
++# End find_key -------------------------------------------- #
++
+ # Fn paint(img: u32, x: u32, y: u32, fr: u32) ------------- #
+ paint:                lw t1, 0(a0)                          # Load image width
+                       lw t2, 4(a0)                          # Load image height

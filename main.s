@@ -1,6 +1,7 @@
                       .text
 
                       .include "./macros.s"
+                      .include "./macros2.s"
 
                       # Display ----------------------------
                       .eqv DISPLAY_0 0xFF000000
@@ -36,11 +37,13 @@
                       .eqv MAX_Y     224                    # Screen limit on the 'y' direction
 
                       # State masks ------------------------
+                      # ... 000D WSF0.
                       .eqv STATE     0x1C
                       .eqv DIRECTION 0x10
                       .eqv WALKING   0x08
                       .eqv SPRITE    0x04
                       .eqv JS_MASK   0xFFFFFFC0
+                      .eqv FALLING   0x02
 
                       .data
 
@@ -87,7 +90,9 @@ main:                 li s0, 0                              # Current frame
                       lw s5, 0(t0)                          # Set current value for Y as its zero
                       andi s5, s5, JS_MASK                  # Reduce noise
 
+
 _loop:                call paint_scene                      # Paint the whole scene on the screen
+                      call play_music
                       call update_state                     # Update walking animation
                       call handle_js_input                  # Handle input from the joystick
                       call handle_input                     # Handle keyboard input
@@ -160,6 +165,48 @@ _update_state_walk_2: andi s3, s3, -9                       # Update to still st
                       ret
 
 # End update_state -----------------------------------------
+
+# Fn play_music() ------------------------------------------
+                      .data
+
+notes_len:            .word 21                              # Numero de Notas a tocar
+                      # lista de nota, duração, nota, duração, nota, duraçãoo,...
+notes:                .word   66,  700,  64,  700,  59, 800,   0,  200
+                      .word   64,  700,  67,  700,  69, 700,  64,  800,    0,  200
+                      .word   67,  700,   0,  100,  67, 700,   0,  200
+                      .word   66,  700,  67,  700,  69, 700,  62,  800,   71, 1010,    0,  100,   69, 1010,    0,  800
+
+                      .text
+
+play_music:           addi sp, sp, -4
+                      sw ra, 0(sp)
+
+                      la t0, notes_len                      # define o endereço do número de notas
+                      lw t1, 0(t0)                          # le o numero de notas
+                      la t2, notes                          # define o endereço das notas
+                      li t0, 0                              # zera o contador de notas
+                      li a2, 5                             # define o instrumento
+                      li a3, 100                            # define o volume
+
+LOOP:                 beq t0, t1, FIM                       # contador chegou no final? então  vá para FIM
+                      lw a0, 0(t2)                          # le o valor da nota
+                      lw a1, 4(t2)                          # le a duracao da nota
+                      li a7, 31                             # define a chamada de syscall
+                      M_Ecall
+
+                      mv a0, a1                             # passa a duração da nota para a pausa
+                      li a7, 32                             # define a chamada de syscal
+                      M_Ecall
+                      addi t2, t2, 8                        # incrementa para o endereço da próxima nota
+                      addi t0, t0, 1                        # incrementa o contador de notas
+                      j LOOP                                # volta ao loop
+
+                      # toca a nota
+FIM:                  lw ra, 0(sp)
+                      addi sp, sp, 4
+                      ret
+
+# End play_music -------------------------------------------
 
 # Fn paint_mario() -----------------------------------------
                       .data
@@ -362,4 +409,4 @@ _paint_slow_skip:     addi a0, a0, 1                        # Update image point
 
 # End paint_slow -------------------------------------------
 
-                      .include "./SYSTEMv14.s"
+                      .include "./SYSTEMv13.s"
